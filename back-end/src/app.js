@@ -9,7 +9,7 @@ const domain = process.env.DOMAIN || `http://localhost:${port}`;
 
 const app = express();
 const server = createServer(app);
-const io = new Server(server);
+const io = new Server(server, { cors: domain });
 
 app.get("/api", (req, res) => {
   res.send("<h1>Hello world</h1>");
