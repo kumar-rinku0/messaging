@@ -11,14 +11,15 @@ const OnlineUsers = () => {
   const token = localStorage.getItem("token");
   console.log(token);
   useEffect(() => {
-    socket.on("users", (users: UsersType) => {
-      const leftUsers = users.filter((user) => user.userID !== token);
-      setOnlineUsers(leftUsers);
-    });
+    function GetOnlineUsers(users: UsersType) {
+      setOnlineUsers([...users]);
+      console.log("Online users updated:", users);
+    }
+    socket.on("users", GetOnlineUsers);
     return () => {
-      socket.off("users");
+      socket.off("users", GetOnlineUsers);
     };
-  }, [socket]);
+  }, [onlineUsers]);
   return (
     <div>
       <h1>Online Users</h1>

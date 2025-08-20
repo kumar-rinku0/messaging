@@ -8,8 +8,8 @@ const ChatApp = () => {
   const [chatMessages, setChatMessages] = useState<any[]>([]);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
     socket.disconnect();
+    localStorage.removeItem("token");
     location.reload();
   };
 
