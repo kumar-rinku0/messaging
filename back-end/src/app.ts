@@ -80,6 +80,7 @@ io.on("connection", (socket: Socket) => {
 
   socket.on("disconnect", () => {
     users = users.filter((user) => user.socketID !== socket.id);
+    socket.emit("users", users);
   });
 });
 
