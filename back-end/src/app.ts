@@ -3,7 +3,16 @@ import { config } from "dotenv";
 import { createServer } from "http";
 import cors from "cors";
 import { Server } from "socket.io";
+import type { Socket as IOSocket } from "socket.io";
 config();
+
+// Extend Socket type to include 'username'
+declare module "socket.io" {
+  interface Socket {
+    userID?: string;
+  }
+}
+type Socket = IOSocket;
 
 // middlewares
 import errorMiddleware from "@/middlewares/error.middleware";
@@ -45,14 +54,32 @@ server.listen(port, () => {
 });
 
 // Socket.IO
-io.on("connection", (socket) => {
-  console.log("a user connected");
-  socket.on("create-something", (msg) => {
-    console.log("create-something received:", msg);
-    io.emit("foo", msg);
+io.use((socket: Socket, next: (err?: Error) => void) => {
+  const userID = socket.handshake.auth.userID;
+  if (!userID) {
+    return next(new Error("invalid userID"));
+  }
+  socket.userID = userID;
+  next();
+});
+
+io.on("connection", (socket: Socket) => {
+  console.log("user connected", {
+    socketID: socket.id,
+    userID: socket.userID,
   });
+
+  let users = [] as { socketID: string; userID: string }[];
+  for (let [id, socket] of io.of("/").sockets) {
+    users.push({
+      socketID: id,
+      userID: socket.userID as string,
+    });
+  }
+  socket.emit("users", users);
+
   socket.on("disconnect", () => {
-    console.log("user disconnected");
+    users = users.filter((user) => user.socketID !== socket.id);
   });
 });
 
