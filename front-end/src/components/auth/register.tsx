@@ -1,3 +1,4 @@
+import api from "@/services/api";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -8,6 +9,14 @@ const Register = () => {
     const formData = new FormData(event.currentTarget);
     const obj = Object.fromEntries(formData.entries());
     console.log("Form Data:", obj);
+    api
+      .post("/users/register", obj)
+      .then((response) => {
+        console.log("Registration successful:", response.data);
+      })
+      .catch((error) => {
+        console.error("Registration failed:", error);
+      });
   };
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">

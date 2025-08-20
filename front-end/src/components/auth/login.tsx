@@ -1,3 +1,4 @@
+import api from "@/services/api";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -8,6 +9,16 @@ const Login = () => {
     const formData = new FormData(event.currentTarget);
     const obj = Object.fromEntries(formData.entries());
     console.log("Form Data:", obj);
+    api
+      .post("/users/login", obj)
+      .then((response) => {
+        console.log("Login successful:", response.data);
+        localStorage.setItem("token", response.data.user._id);
+        location.reload();
+      })
+      .catch((error) => {
+        console.error("Login failed:", error);
+      });
   };
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
