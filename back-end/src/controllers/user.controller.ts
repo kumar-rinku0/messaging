@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import User from "../models/user.model";
 import { verifyPassword } from "@/utils/hashing";
+import crypto from "crypto";
 
 const handleUserRegistration = async (req: Request, res: Response) => {
   const { username, email, password } = req.body;
@@ -25,7 +26,8 @@ const handleUserLogin = async (req: Request, res: Response) => {
   if (!isRightPassword) {
     return res.status(401).json({ message: "Invalid password" });
   }
-  return res.status(200).json({ message: "Login successful", user });
+  const token = crypto.randomBytes(32).toString("hex"); // Generate a token (use a proper library in production)
+  return res.status(200).json({ message: "Login successful", user, token });
 };
 
 export { handleUserRegistration, handleUserLogin };

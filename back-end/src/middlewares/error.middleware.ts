@@ -12,7 +12,7 @@ const errorMiddleware = (
   res: Response,
   next: NextFunction
 ) => {
-  console.error("Error middleware triggered:", err.name, err.message);
+  console.error("Error middleware triggered:", err);
 
   // Optionally: handle specific errors
   if (err.name === "ValidationError") {
