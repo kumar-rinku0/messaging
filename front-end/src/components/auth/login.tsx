@@ -13,6 +13,8 @@ const Login = () => {
       .post("/users/login", obj)
       .then((response) => {
         console.log("Login successful:", response.data);
+        localStorage.setItem("token", response.data.token);
+        location.reload();
       })
       .catch((error) => {
         console.error("Login failed:", error);
