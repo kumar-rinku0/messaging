@@ -1,11 +1,33 @@
 import { useState, useEffect } from "react";
 import { socket } from "@/services/socket";
 import { Button } from "../ui/button";
+import OnlineUsers from "./online-users";
 
 const ChatApp = () => {
+  // const [isConnected, setIsConnected] = useState(socket.connected);
   const [chatMessages, setChatMessages] = useState<any[]>([]);
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    socket.disconnect();
+    location.reload();
+  };
+
+  const onUsernameSelection = () => {
+    const token = localStorage.getItem("token");
+    socket.auth = { userID: token };
+    socket.connect();
+  };
+
   useEffect(() => {
+    // function onConnect() {
+    //   setIsConnected(true);
+    // }
+
+    // function onDisconnect() {
+    //   setIsConnected(false);
+    // }
+
     function onChatMessage(value: any) {
       console.log("Received chat message:", value);
       // chrome notification on chat message
@@ -19,21 +41,22 @@ const ChatApp = () => {
       }
       setChatMessages((previous) => [...previous, value]);
     }
-
+    onUsernameSelection();
+    // socket.on("connect", onConnect);
+    // socket.on("disconnect", onDisconnect);
     socket.on("chat-message", onChatMessage);
 
     return () => {
+      // socket.off("connect", onConnect);
+      // socket.off("disconnect", onDisconnect);
       socket.off("chat-message", onChatMessage);
     };
   }, []);
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    location.reload();
-  };
   return (
     <div>
       <h1>Chat Application</h1>
-      <Button onClick={handleLogout}>logout</Button>
+      <OnlineUsers />
+      <Button onClick={handleLogout}>Logout</Button>
       <div>
         {chatMessages.map((msg, index) => (
           <div key={index}>{msg}</div>

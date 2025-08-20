@@ -1,7 +1,7 @@
 import { Routes, Route } from "react-router";
-import Login from "./components/auth/login";
-import Register from "./components/auth/register";
-import ChatApp from "./components/private/chat-app";
+import Login from "@/components/auth/login";
+import Register from "@/components/auth/register";
+import ChatApp from "@/components/private/chat-app";
 export default function App() {
   const token = localStorage.getItem("token");
   if (!token) {
@@ -18,3 +18,8 @@ export default function App() {
     </Routes>
   );
 }
+// todo: implement message sending and receiving
+// 0. auth based on bearer token
+// 1. Create a message input component
+// 2. Connect the input to the message sending API
+// 3. Display messages in the chat window

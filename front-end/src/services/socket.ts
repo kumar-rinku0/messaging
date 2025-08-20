@@ -4,4 +4,4 @@ import { io } from "socket.io-client";
 const domain = import.meta.env.VITE_BACKEND_URL;
 const URL = domain || "http://localhost:4000";
 
-export const socket = io(URL);
+export const socket = io(URL, { autoConnect: false });

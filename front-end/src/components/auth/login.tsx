@@ -13,7 +13,7 @@ const Login = () => {
       .post("/users/login", obj)
       .then((response) => {
         console.log("Login successful:", response.data);
-        localStorage.setItem("token", response.data.token);
+        localStorage.setItem("token", response.data.user._id);
         location.reload();
       })
       .catch((error) => {
