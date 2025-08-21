@@ -1,12 +1,6 @@
 import React, { useEffect } from "react";
 import api from "@/services/api";
-
-type UserType = {
-  // socketId: string;
-  // userId: string;
-  username: string;
-  _id: string;
-};
+import type { UserType, ChatType, MessageType } from "@/types/api-types";
 
 type UsersType = UserType[];
 
@@ -16,58 +10,41 @@ type ResponseType = {
 
 const OnlineUsers = () => {
   const [onlineUsers, setOnlineUsers] = React.useState<UsersType>([]);
-  const [userChat, setUserChat] = React.useState<null | UserType>(null);
+  const [chats, setChats] = React.useState<ChatType[]>([]);
   const token = localStorage.getItem("token");
   console.log(token);
   useEffect(() => {
-    function GetOnlineUsers() {
+    function getOnlineUsers() {
       api.get<ResponseType>("/users/all").then((response) => {
         const users = response.data.users.filter((user) => user._id !== token);
         setOnlineUsers(users);
       });
     }
-    GetOnlineUsers();
+    function getChats() {
+      api.get<ChatType[]>(`/chat/private/${token}`).then((response) => {
+        setChats(response.data);
+      });
+    }
+    getOnlineUsers();
+    getChats();
   }, []);
 
   const handleUserClick = (user: UserType) => {
-    setUserChat(user);
     api
-      .get(`/chat/private/${token}/${user._id}`)
+      .post("/chat/private", {
+        sender: token,
+        recipient: user._id,
+      })
       .then((response) => {
-        // Handle the response for the private chat
-        console.log("Private chat data:", response.data.messages);
+        console.log("Private chat created:", response.data);
+        setOnlineUsers((prevUsers) =>
+          prevUsers.filter((u) => u._id !== user._id)
+        );
       })
       .catch((error) => {
-        console.log(error);
-        if (error.response.status === 404) {
-          api
-            .post("/chat/private", {
-              sender: token,
-              recipient: user._id,
-            })
-            .then((response) => {
-              console.log("Private chat created:", response.data);
-            })
-            .catch((error) => {
-              console.error("Error creating private chat:", error);
-            });
-        } else {
-          console.error("Error fetching private chat data:", error);
-        }
+        console.error("Error creating private chat:", error);
       });
   };
-
-  if (userChat) {
-    return (
-      <div className="min-h-40 bg-accent">
-        <div className="overlay-content">
-          <h2>{userChat.username}</h2>
-          <p>More information about the user will be displayed here.</p>
-          <button onClick={() => setUserChat(null)}>Close</button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-40 bg-accent">
@@ -86,8 +63,32 @@ const OnlineUsers = () => {
           </div>
         ))}
       </div>
+      <div>
+        {chats.map((chat) => (
+          <div key={chat._id} className="p-2 bg-blue-100">
+            {chat.members.find((member) => member._id !== token)?.username}
+            <div>
+              <LastMessage chatId={chat._id} />
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
+};
+
+const LastMessage = ({ chatId }: { chatId: string }) => {
+  const [lastMessage, setLastMessage] = React.useState<string | null>(null);
+
+  useEffect(() => {
+    api
+      .get<MessageType | null>(`/msg/last-message/${chatId}`)
+      .then((response) => {
+        setLastMessage(response.data?.msg || null);
+      });
+  }, [chatId]);
+
+  return <div>{lastMessage ? lastMessage : "No messages yet"}</div>;
 };
 
 export default OnlineUsers;
