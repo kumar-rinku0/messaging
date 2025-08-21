@@ -6,6 +6,7 @@ import OnlineUsers from "./online-users";
 const ChatApp = () => {
   // const [isConnected, setIsConnected] = useState(socket.connected);
   const [chatMessages, setChatMessages] = useState<any[]>([]);
+  const token = localStorage.getItem("token");
 
   const handleLogout = () => {
     socket.disconnect();
@@ -13,20 +14,20 @@ const ChatApp = () => {
     location.reload();
   };
 
-  const onUsernameSelection = () => {
-    const token = localStorage.getItem("token");
-    socket.auth = { userID: token };
-    socket.connect();
-  };
-
   useEffect(() => {
-    // function onConnect() {
-    //   setIsConnected(true);
-    // }
+    const onUsernameSelection = () => {
+      socket.auth = { userId: token };
+      socket.connect();
+    };
 
-    // function onDisconnect() {
-    //   setIsConnected(false);
-    // }
+    function onConnect() {
+      console.log("Connected to socket server");
+      socket.emit("newUser", token);
+    }
+
+    function onDisconnect() {
+      console.log("Disconnected from socket server");
+    }
 
     function onChatMessage(value: any) {
       console.log("Received chat message:", value);
@@ -42,13 +43,13 @@ const ChatApp = () => {
       setChatMessages((previous) => [...previous, value]);
     }
     onUsernameSelection();
-    // socket.on("connect", onConnect);
-    // socket.on("disconnect", onDisconnect);
+    socket.on("connect", onConnect);
+    socket.on("disconnect", onDisconnect);
     socket.on("chat-message", onChatMessage);
 
     return () => {
-      // socket.off("connect", onConnect);
-      // socket.off("disconnect", onDisconnect);
+      socket.off("connect", onConnect);
+      socket.off("disconnect", onDisconnect);
       socket.off("chat-message", onChatMessage);
     };
   }, []);
