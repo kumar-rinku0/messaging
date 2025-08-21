@@ -21,4 +21,17 @@ const handleGetMessagesByChatId = async (req: Request, res: Response) => {
   res.status(200).json(messages);
 };
 
-export { handleCreateMessage, handleGetMessagesByChatId };
+const handleGetLastMessageByChatId = async (req: Request, res: Response) => {
+  const { chatId } = req.params;
+
+  const lastMessage = await Message.findOne({ chat: chatId }).sort({
+    createdAt: -1,
+  });
+  res.status(200).json(lastMessage);
+};
+
+export {
+  handleCreateMessage,
+  handleGetMessagesByChatId,
+  handleGetLastMessageByChatId,
+};
