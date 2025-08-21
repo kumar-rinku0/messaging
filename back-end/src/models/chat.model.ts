@@ -7,12 +7,16 @@ const chatSchema = new Schema(
       required: true,
     },
     members: {
-      type: [Schema.Types.ObjectId],
-      ref: "User",
+      type: [
+        {
+          type: Schema.Types.ObjectId,
+          ref: "User",
+          required: true,
+        },
+      ],
       required: true,
       validate: {
-        validator: (v: Array<Schema.Types.ObjectId>) =>
-          Array.isArray(v) && v.length > 1,
+        validator: (v: any) => Array.isArray(v) && v.length > 1,
         message: "Members must be a non-empty array with at least two members",
       },
     },

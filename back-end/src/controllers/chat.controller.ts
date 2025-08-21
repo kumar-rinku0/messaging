@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import Chat from "@/models/chat.model";
+import Message from "@/models/msg.model";
 
 const handleCreatePrivateChat = async (req: Request, res: Response) => {
   const { sender, recipient } = req.body;
@@ -46,8 +47,9 @@ const handleGetPrivateChat = async (req: Request, res: Response) => {
   if (!chat) {
     return res.status(404).json({ message: "Chat not found" });
   }
+  const messages = await Message.find({ chat: chat._id }).populate("sender");
 
-  res.status(200).json(chat);
+  res.status(200).json({ chat, messages });
 };
 
 export {

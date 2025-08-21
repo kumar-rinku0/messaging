@@ -1,25 +1,19 @@
 import express from "express";
+import cors from "cors";
+import mongoose from "mongoose";
 import { config } from "dotenv";
 import { createServer } from "http";
-import cors from "cors";
 import { Server } from "socket.io";
 import type { Socket as IOSocket } from "socket.io";
 config();
-
-// Extend Socket type to include 'username'
-declare module "socket.io" {
-  interface Socket {
-    userID?: string;
-  }
-}
-type Socket = IOSocket;
 
 // middlewares
 import errorMiddleware from "@/middlewares/error.middleware";
 
 // routers
 import userRouter from "@/routes/user.route";
-import mongoose from "mongoose";
+import chatRouter from "@/routes/chat.route";
+import msgRouter from "./routes/msg.route";
 
 const port = process.env.PORT || 3000;
 const domain = process.env.DOMAIN || `http://localhost:${port}`;
@@ -48,39 +42,41 @@ app.get("/api", (req, res) => {
 });
 
 app.use("/api/users", userRouter);
+app.use("/api/chat", chatRouter);
+app.use("/api/msg", msgRouter);
 
 server.listen(port, () => {
   console.log(`listening on ${port}`);
 });
 
 // Socket.IO
+
+type Socket = IOSocket & { userId?: string };
+// Middleware to authenticate socket connections
+
 io.use((socket: Socket, next: (err?: Error) => void) => {
-  const userID = socket.handshake.auth.userID;
-  if (!userID) {
+  const userId = socket.handshake.auth.userId;
+  if (!userId) {
     return next(new Error("invalid userID"));
   }
-  socket.userID = userID;
+  socket.userId = userId;
   next();
 });
 
+let onlineUsers = [] as { socketId: string; userId: string }[];
 io.on("connection", (socket: Socket) => {
-  console.log("user connected", {
-    socketID: socket.id,
-    userID: socket.userID,
+  // listen to a new connection
+  socket.on("newUser", (userId: string) => {
+    !onlineUsers.some((user) => user.userId === userId) &&
+      onlineUsers.push({ socketId: socket.id, userId });
+
+    // console.log("online users", onlineUsers);
+    socket.emit("users", onlineUsers);
   });
 
-  let users = [] as { socketID: string; userID: string }[];
-  for (let [id, socket] of io.of("/").sockets) {
-    users.push({
-      socketID: id,
-      userID: socket.userID as string,
-    });
-  }
-  socket.emit("users", users);
-
   socket.on("disconnect", () => {
-    users = users.filter((user) => user.socketID !== socket.id);
-    socket.emit("users", users);
+    onlineUsers = onlineUsers.filter((user) => user.socketId !== socket.id);
+    socket.emit("users", onlineUsers);
   });
 });
 
