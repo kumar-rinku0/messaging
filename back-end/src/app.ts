@@ -16,7 +16,7 @@ import chatRouter from "@/routes/chat.route";
 import msgRouter from "./routes/msg.route";
 
 const port = process.env.PORT || 3000;
-const domain = process.env.DOMAIN || `http://localhost:${port}`;
+const domain = process.env.DOMAIN || "http://localhost:5173";
 const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/myapp";
 
 const app = express();
