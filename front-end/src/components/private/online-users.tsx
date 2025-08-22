@@ -1,6 +1,9 @@
 import React, { useEffect } from "react";
 import api from "@/services/api";
-import type { UserType, ChatType, MessageType } from "@/types/api-types";
+import type { UserType, ChatType } from "@/types/api-types";
+import SingleChat from "./single-chat";
+import ChatMessages from "./chat-messages";
+import { Button } from "../ui/button";
 
 type UsersType = UserType[];
 
@@ -11,6 +14,7 @@ type ResponseType = {
 const OnlineUsers = () => {
   const [onlineUsers, setOnlineUsers] = React.useState<UsersType>([]);
   const [chats, setChats] = React.useState<ChatType[]>([]);
+  const [selectedChat, setSelectedChat] = React.useState<ChatType | null>(null);
   const token = localStorage.getItem("token");
   console.log(token);
   useEffect(() => {
@@ -37,14 +41,35 @@ const OnlineUsers = () => {
       })
       .then((response) => {
         console.log("Private chat created:", response.data);
-        setOnlineUsers((prevUsers) =>
-          prevUsers.filter((u) => u._id !== user._id)
-        );
+        setChats((prevChats) => [
+          ...prevChats,
+          {
+            ...response.data,
+            members: [user, { _id: token, username: "You" }],
+          },
+        ]);
       })
       .catch((error) => {
         console.error("Error creating private chat:", error);
       });
   };
+
+  const handleChatSelect = (chat: ChatType) => {
+    setSelectedChat(chat);
+  };
+
+  const handleCloseChat = () => {
+    setSelectedChat(null);
+  };
+
+  if (selectedChat) {
+    return (
+      <div>
+        <Button onClick={handleCloseChat}>Close Chat</Button>
+        <ChatMessages chat={selectedChat} />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-40 bg-accent">
@@ -65,30 +90,21 @@ const OnlineUsers = () => {
       </div>
       <div>
         {chats.map((chat) => (
-          <div key={chat._id} className="p-2 bg-blue-100">
-            {chat.members.find((member) => member._id !== token)?.username}
-            <div>
-              <LastMessage chatId={chat._id} />
-            </div>
-          </div>
+          <SingleChat
+            chat={chat}
+            key={chat._id}
+            onClick={() => handleChatSelect(chat)}
+          />
+          // <div key={chat._id} className="p-2 bg-blue-100">
+          //   {chat.members.find((member) => member._id !== token)?.username}
+          //   <div>
+          //     <LastMessage chatId={chat._id} />
+          //   </div>
+          // </div>
         ))}
       </div>
     </div>
   );
-};
-
-const LastMessage = ({ chatId }: { chatId: string }) => {
-  const [lastMessage, setLastMessage] = React.useState<string | null>(null);
-
-  useEffect(() => {
-    api
-      .get<MessageType | null>(`/msg/last-message/${chatId}`)
-      .then((response) => {
-        setLastMessage(response.data?.msg || null);
-      });
-  }, [chatId]);
-
-  return <div>{lastMessage ? lastMessage : "No messages yet"}</div>;
 };
 
 export default OnlineUsers;
