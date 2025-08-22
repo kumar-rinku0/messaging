@@ -1,16 +1,26 @@
 import { Request, Response } from "express";
 import Chat from "@/models/chat.model";
+import Message from "@/models/msg.model";
 
 const handleCreatePrivateChat = async (req: Request, res: Response) => {
   const { sender, recipient } = req.body;
 
-  const chat = new Chat({
+  const oldChat = await Chat.findOne({
+    members: { $all: [sender, recipient] },
     name: "private-chat",
-    members: [sender, recipient],
   });
-  await chat.save();
 
-  res.status(201).json(chat);
+  if (!oldChat) {
+    const chat = new Chat({
+      name: "private-chat",
+      members: [sender, recipient],
+    });
+    await chat.save();
+
+    return res.status(201).json(chat);
+  }
+
+  return res.status(200).json(oldChat);
 };
 
 const handleCreateGroupChat = async (req: Request, res: Response) => {
@@ -37,10 +47,10 @@ const handleGetChatById = async (req: Request, res: Response) => {
 };
 
 const handleGetPrivateChat = async (req: Request, res: Response) => {
-  const { sender, recipient } = req.params;
+  const { userId } = req.params;
 
-  const chat = await Chat.findOne({
-    members: { $all: [sender, recipient] },
+  const chat = await Chat.find({
+    members: { $all: [userId] },
     name: "private-chat",
   }).populate("members");
   if (!chat) {

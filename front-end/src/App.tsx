@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router";
 import Login from "@/components/auth/login";
 import Register from "@/components/auth/register";
 import ChatApp from "@/components/private/chat-app";
+import ChatMessages from "./components/private/chat-messages";
 export default function App() {
   const token = localStorage.getItem("token");
   if (!token) {
@@ -15,6 +16,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={<ChatApp />} />
+      <Route path="/chat/:chatId" element={<ChatMessages />} />
     </Routes>
   );
 }

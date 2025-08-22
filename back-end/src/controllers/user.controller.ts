@@ -30,4 +30,9 @@ const handleUserLogin = async (req: Request, res: Response) => {
   return res.status(200).json({ message: "Login successful", user, token });
 };
 
-export { handleUserRegistration, handleUserLogin };
+const handleGetAllUsers = async (req: Request, res: Response) => {
+  const users = await User.find({});
+  return res.status(200).json({ users: users });
+};
+
+export { handleUserRegistration, handleUserLogin, handleGetAllUsers };

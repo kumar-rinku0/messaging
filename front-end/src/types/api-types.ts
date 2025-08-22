@@ -1,6 +1,17 @@
-export type ChatMessageType = {
+export type MessageType = {
   _id: string;
-  content: string;
+  msg: string;
   sender: string;
   createdAt: Date;
+};
+
+export type UserType = {
+  username: string;
+  _id: string;
+};
+
+export type ChatType = {
+  _id: string;
+  name: string;
+  members: UserType[];
 };
