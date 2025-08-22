@@ -2,8 +2,10 @@ import api from "@/services/api";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
+import React from "react";
 
 const Login = () => {
+  const [error, setError] = React.useState<string | null>(null);
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
@@ -17,6 +19,7 @@ const Login = () => {
         location.reload();
       })
       .catch((error) => {
+        setError(error.response?.data?.message || "Login failed");
         console.error("Login failed:", error);
       });
   };
@@ -33,6 +36,7 @@ const Login = () => {
             <Label htmlFor="password">Password:</Label>
             <Input type="password" id="password" name="password" required />
           </div>
+          <div>{error && <p className="text-red-500">{error}</p>}</div>
           <Button type="submit">Login</Button>
         </form>
       </div>
