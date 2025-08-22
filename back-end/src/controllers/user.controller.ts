@@ -35,4 +35,18 @@ const handleGetAllUsers = async (req: Request, res: Response) => {
   return res.status(200).json({ users: users });
 };
 
-export { handleUserRegistration, handleUserLogin, handleGetAllUsers };
+const getOnlineUsers = async (
+  onlineUsers: { socketId: string; userId: string }[]
+) => {
+  const users = await User.find({
+    _id: { $in: onlineUsers.map((user) => user.userId) },
+  }).select("-password -email -__v");
+  return users;
+};
+
+export {
+  handleUserRegistration,
+  handleUserLogin,
+  handleGetAllUsers,
+  getOnlineUsers,
+};

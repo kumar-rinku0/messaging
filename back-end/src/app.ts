@@ -1,5 +1,4 @@
 import express from "express";
-import cors from "cors";
 import mongoose from "mongoose";
 import { config } from "dotenv";
 import { createServer } from "http";
@@ -14,14 +13,14 @@ import errorMiddleware from "@/middlewares/error.middleware";
 import userRouter from "@/routes/user.route";
 import chatRouter from "@/routes/chat.route";
 import msgRouter from "./routes/msg.route";
+import { getOnlineUsers } from "./controllers/user.controller";
 
 const port = process.env.PORT || 3000;
-const domain = process.env.DOMAIN || "http://localhost:5173";
 const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/myapp";
 
 const app = express();
 const server = createServer(app);
-const io = new Server(server, { cors: { origin: domain } });
+const io = new Server(server, { path: "/api/socket.io" });
 
 mongoose
   .connect(MONGO_URI)
@@ -33,7 +32,6 @@ mongoose
   });
 
 // middlewares
-app.use(cors());
 app.use(express.json({ limit: "40kb" }));
 app.use(express.urlencoded({ limit: "40kb", extended: true }));
 
@@ -66,17 +64,19 @@ io.use((socket: Socket, next: (err?: Error) => void) => {
 let onlineUsers = [] as { socketId: string; userId: string }[];
 io.on("connection", (socket: Socket) => {
   // listen to a new connection
-  socket.on("newUser", (userId: string) => {
+  socket.on("newUser", async (userId: string) => {
     !onlineUsers.some((user) => user.userId === userId) &&
       onlineUsers.push({ socketId: socket.id, userId });
 
     // console.log("online users", onlineUsers);
-    socket.emit("users", onlineUsers);
+    const filteredUsers = await getOnlineUsers(onlineUsers);
+    socket.emit("users", filteredUsers);
   });
 
-  socket.on("disconnect", () => {
+  socket.on("disconnect", async () => {
     onlineUsers = onlineUsers.filter((user) => user.socketId !== socket.id);
-    socket.emit("users", onlineUsers);
+    const filteredUsers = await getOnlineUsers(onlineUsers);
+    socket.emit("users", filteredUsers);
   });
 });
 
