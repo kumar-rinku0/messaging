@@ -1,10 +1,9 @@
 import axios from "axios";
 
-const API_URL = `${import.meta.env.VITE_BACKEND_URL}/api`;
-
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: "/api",
   timeout: 10000,
+  withCredentials: true, // send cookies when cross-domain requests
 });
 
 // Request interceptor

@@ -1,35 +1,62 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import api from "@/services/api";
 import type { UserType, ChatType } from "@/types/api-types";
 import SingleChat from "./single-chat";
 import ChatMessages from "./chat-messages";
 import { Button } from "../ui/button";
+import { socket } from "@/services/socket";
 
 type UsersType = UserType[];
 
-type ResponseType = {
-  users: UsersType;
-};
+// type ResponseType = {
+//   users: UsersType;
+// };
 
 const OnlineUsers = () => {
+  const [isConnected, setIsConnected] = useState(socket.connected);
   const [onlineUsers, setOnlineUsers] = React.useState<UsersType>([]);
   const [chats, setChats] = React.useState<ChatType[]>([]);
   const [selectedChat, setSelectedChat] = React.useState<ChatType | null>(null);
   const token = localStorage.getItem("token");
   console.log(token);
+
   useEffect(() => {
-    function getOnlineUsers() {
-      api.get<ResponseType>("/users/all").then((response) => {
-        const users = response.data.users.filter((user) => user._id !== token);
-        setOnlineUsers(users);
-      });
+    function onConnect() {
+      setIsConnected(true);
     }
+
+    function onDisconnect() {
+      setIsConnected(false);
+    }
+
+    function getOnlineUsers(users: UsersType) {
+      console.log("Online users from socket:", users);
+      const filteredUsers = users.filter((user) => user._id !== token);
+      setOnlineUsers((prev) => [...prev, ...filteredUsers]);
+    }
+
+    socket.on("connect", onConnect);
+    socket.on("disconnect", onDisconnect);
+    socket.on("users", getOnlineUsers);
+
+    return () => {
+      socket.off("connect", onConnect);
+      socket.off("disconnect", onDisconnect);
+      socket.off("users", getOnlineUsers);
+    };
+  }, []);
+
+  useEffect(() => {
+    // api.get<ResponseType>("/users/all").then((response) => {
+    //   const users = response.data.users.filter((user) => user._id !== token);
+    //   setOnlineUsers(users);
+    // });
+
     function getChats() {
       api.get<ChatType[]>(`/chat/private/${token}`).then((response) => {
         setChats(response.data);
       });
     }
-    getOnlineUsers();
     getChats();
   }, []);
 
@@ -41,13 +68,17 @@ const OnlineUsers = () => {
       })
       .then((response) => {
         console.log("Private chat created:", response.data);
-        setChats((prevChats) => [
-          ...prevChats,
-          {
-            ...response.data,
-            members: [user, { _id: token, username: "You" }],
-          },
-        ]);
+        if (chats.some((chat) => chat._id === response.data._id)) {
+          setSelectedChat(response.data);
+        } else {
+          setChats((prevChats) => [
+            ...prevChats,
+            {
+              ...response.data,
+              members: [user, { _id: token, username: "You" }],
+            },
+          ]);
+        }
       })
       .catch((error) => {
         console.error("Error creating private chat:", error);
@@ -73,6 +104,7 @@ const OnlineUsers = () => {
 
   return (
     <div className="min-h-40 bg-accent">
+      <div>currently you're {isConnected ? "connected" : "disconnected"}</div>
       <h1>Online Users</h1>
       <p>List of online users will be displayed here.</p>
       {/* Placeholder for online users list */}
