@@ -62,16 +62,15 @@ io.use((socket: Socket, next: (err?: Error) => void) => {
 });
 
 let onlineUsers = [] as { socketId: string; userId: string }[];
-io.on("connection", (socket: Socket) => {
-  // listen to a new connection
-  socket.on("newUser", async (userId: string) => {
-    !onlineUsers.some((user) => user.userId === userId) &&
-      onlineUsers.push({ socketId: socket.id, userId });
+io.on("connection", async (socket: Socket) => {
+  const userId = socket.userId;
+  if (!userId) return;
 
-    // console.log("online users", onlineUsers);
-    const filteredUsers = await getOnlineUsers(onlineUsers);
-    socket.emit("users", filteredUsers);
-  });
+  !onlineUsers.some((user) => user.userId === userId) &&
+    onlineUsers.push({ socketId: socket.id, userId });
+
+  const filteredUsers = await getOnlineUsers(onlineUsers);
+  socket.emit("users", filteredUsers);
 
   socket.on("disconnect", async () => {
     onlineUsers = onlineUsers.filter((user) => user.socketId !== socket.id);
