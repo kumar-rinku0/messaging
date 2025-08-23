@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import { config } from "dotenv";
 import { createServer } from "http";
 import { Server } from "socket.io";
-import type { Socket as IOSocket } from "socket.io";
+import type { Socket } from "socket.io";
 config();
 
 // middlewares
@@ -49,33 +49,23 @@ server.listen(port, () => {
 
 // Socket.IO
 
-type Socket = IOSocket & { userId?: string };
-// Middleware to authenticate socket connections
-
-io.use((socket: Socket, next: (err?: Error) => void) => {
-  const userId = socket.handshake.auth.userId;
-  if (!userId) {
-    return next(new Error("invalid userID"));
-  }
-  socket.userId = userId;
-  next();
-});
-
 let onlineUsers = [] as { socketId: string; userId: string }[];
 io.on("connection", async (socket: Socket) => {
-  const userId = socket.userId;
+  const userId = socket.handshake.auth.userId;
   if (!userId) return;
-
+  console.log("a user connected with ID:", userId);
   !onlineUsers.some((user) => user.userId === userId) &&
     onlineUsers.push({ socketId: socket.id, userId });
 
   const filteredUsers = await getOnlineUsers(onlineUsers);
-  socket.emit("users", filteredUsers);
+  socket.emit("online-users", filteredUsers);
+  socket.broadcast.emit("online-users", filteredUsers);
 
   socket.on("disconnect", async () => {
     onlineUsers = onlineUsers.filter((user) => user.socketId !== socket.id);
     const filteredUsers = await getOnlineUsers(onlineUsers);
-    socket.emit("users", filteredUsers);
+    socket.emit("online-users", filteredUsers);
+    socket.broadcast.emit("online-users", filteredUsers);
   });
 });
 
