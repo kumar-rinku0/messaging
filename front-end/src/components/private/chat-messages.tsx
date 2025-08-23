@@ -3,6 +3,7 @@ import type { ChatType, MessageType } from "@/types/api-types";
 import React, { useEffect } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
+import socket from "@/services/socket";
 
 const ChatMessages = ({ chat }: { chat: ChatType }) => {
   const { _id: chatId } = chat;
@@ -26,6 +27,9 @@ const ChatMessages = ({ chat }: { chat: ChatType }) => {
       console.error("No token found in localStorage or empty message");
       return;
     }
+    socket.timeout(5000).emit("msg", msg, () => {
+      console.log("acknowledged");
+    });
     api
       .post(`/msg`, { msg: msg, chatId: chatId, sender: token })
       .then((response) => {

@@ -8,10 +8,6 @@ import socket from "@/services/socket";
 
 type UsersType = UserType[];
 
-// type ResponseType = {
-//   users: UsersType;
-// };
-
 const OnlineUsers = () => {
   const [onlineUsers, setOnlineUsers] = React.useState<UsersType>([]);
   const [chats, setChats] = React.useState<ChatType[]>([]);
@@ -20,18 +16,18 @@ const OnlineUsers = () => {
   console.log(token);
 
   useEffect(() => {
-    function getOnlineUsers(users: UsersType) {
+    const getOnlineUsers = (users: UsersType) => {
       console.log("Online users from socket:", users);
-      const filteredUsers = users.filter((user) => user._id !== token);
-      setOnlineUsers(filteredUsers);
-    }
+      const filtered = users.filter((user) => user._id !== token);
+      setOnlineUsers(filtered);
+    };
 
-    socket.on("users", getOnlineUsers);
+    socket.on("online-users", getOnlineUsers);
 
     return () => {
-      socket.off("users", getOnlineUsers);
+      socket.off("online-users", getOnlineUsers);
     };
-  }, []);
+  }, [token]);
 
   useEffect(() => {
     // api.get<ResponseType>("/users/all").then((response) => {
