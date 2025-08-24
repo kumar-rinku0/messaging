@@ -61,6 +61,18 @@ io.on("connection", async (socket: Socket) => {
   socket.emit("online-users", filteredUsers);
   socket.broadcast.emit("online-users", filteredUsers);
 
+  socket.on("msg", (recipients: string[], msg) => {
+    console.log("message received:", msg);
+    recipients.map((recipientId) => {
+      const recipientSocket = onlineUsers.find(
+        (user) => user.userId === recipientId
+      );
+      if (recipientSocket) {
+        socket.to(recipientSocket.socketId).emit("msg", msg);
+      }
+    });
+  });
+
   socket.on("disconnect", async () => {
     onlineUsers = onlineUsers.filter((user) => user.socketId !== socket.id);
     const filteredUsers = await getOnlineUsers(onlineUsers);
