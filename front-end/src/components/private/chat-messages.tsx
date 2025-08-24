@@ -17,7 +17,25 @@ const ChatMessages = ({ chat }: { chat: ChatType }) => {
         setMessages(response.data);
       });
     }
+
+    function onChatMessage(newMsg: MessageType) {
+      console.log("Received chat message:", newMsg);
+      // chrome notification on chat message
+      if (Notification.permission !== "granted") {
+        Notification.requestPermission();
+      }
+      if (Notification.permission === "granted") {
+        new Notification("Chat Message", {
+          body: `Received chat message: ${newMsg.msg}`,
+        });
+      }
+      setMessages((prevMessages) => [...prevMessages, newMsg]);
+    }
     fetchChatMessages();
+    socket.on("msg", onChatMessage);
+    return () => {
+      socket.off("msg", onChatMessage);
+    };
   }, [chatId]);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -27,14 +45,16 @@ const ChatMessages = ({ chat }: { chat: ChatType }) => {
       console.error("No token found in localStorage or empty message");
       return;
     }
-    socket.timeout(5000).emit("msg", msg, () => {
-      console.log("acknowledged");
-    });
     api
       .post(`/msg`, { msg: msg, chatId: chatId, sender: token })
       .then((response) => {
         // Handle the response if needed
         setMessages((prevMessages) => [...prevMessages, response.data]);
+        socket.emit(
+          "msg",
+          chat.members.filter((member) => member._id !== token),
+          response.data
+        );
         setMsg(""); // Clear the input field after sending the message
       });
   };
