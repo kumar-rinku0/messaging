@@ -35,8 +35,12 @@ mongoose
 app.use(express.json({ limit: "40kb" }));
 app.use(express.urlencoded({ limit: "40kb", extended: true }));
 
+app.get("/", (req, res) => {
+  return res.json({ req: "success" });
+});
+
 app.get("/api", (req, res) => {
-  res.send("<h1>Hello world</h1>");
+  return res.json({ req: "success" });
 });
 
 app.use("/api/users", userRouter);
