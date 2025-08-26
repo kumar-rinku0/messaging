@@ -1,4 +1,4 @@
 {
   "version": 2,
-  "buildCommand": "echo build running && npm run build",
+  "buildCommand": "npm run build",
 }
