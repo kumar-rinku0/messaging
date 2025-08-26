@@ -1,17 +1,4 @@
 {
   "version": 2,
   "buildCommand": "echo build running && npm run build",
-  "builds": [
-    {
-      "src": "dist/app.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    { "handle": "filesystem" },
-    {
-      "src": "/(.*)",
-      "dest": "dist/app.js"
-    }
-  ]
 }
