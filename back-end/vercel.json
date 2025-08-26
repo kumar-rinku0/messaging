@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
+  "buildCommand": "echo build running && npm run build",
   "builds": [
     {
       "src": "dist/app.js",
