@@ -12,8 +12,8 @@ import errorMiddleware from "@/middlewares/error.middleware";
 // routers
 import userRouter from "@/routes/user.route";
 import chatRouter from "@/routes/chat.route";
-import msgRouter from "./routes/msg.route";
-import { getOnlineUsers } from "./controllers/user.controller";
+import msgRouter from "@/routes/msg.route";
+import { getOnlineUsers } from "@/controllers/user.controller";
 
 const port = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/myapp";
