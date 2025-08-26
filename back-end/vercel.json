@@ -3,7 +3,7 @@
   "buildCommand": "npm run build",
   "builds": [
     {
-      "src": "dist/app.js",
+      "src": "src/app.ts",
       "use": "@vercel/node"
     }
   ],
@@ -11,7 +11,7 @@
     { "handle": "filesystem" },
     {
       "src": "/(.*)",
-      "dest": "dist/app.js"
+      "dest": "src/app.ts"
     }
   ]
 }
