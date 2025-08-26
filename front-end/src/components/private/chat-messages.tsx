@@ -19,16 +19,6 @@ const ChatMessages = ({ chat }: { chat: ChatType }) => {
     }
 
     function onChatMessage(newMsg: MessageType) {
-      console.log("Received chat message:", newMsg);
-      // chrome notification on chat message
-      if (Notification.permission !== "granted") {
-        Notification.requestPermission();
-      }
-      if (Notification.permission === "granted") {
-        new Notification("Chat Message", {
-          body: `Received chat message: ${newMsg.msg}`,
-        });
-      }
       setMessages((prevMessages) => [...prevMessages, newMsg]);
     }
     fetchChatMessages();
