@@ -8,6 +8,12 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
   return {
     plugins: [react(), tailwindcss()],
+    preview: {
+      port: 4173,
+      proxy: {
+        "/api": env.VITE_API_URL || "http://localhost:4000",
+      },
+    },
     server: {
       host: "0.0.0.0",
       port: 5173,
