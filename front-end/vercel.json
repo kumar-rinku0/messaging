@@ -1,10 +1,6 @@
 {
   "rewrites": [
     {
-      "source": "/api/socket.io",
-      "destination": "https://messaging-0.onrender.com/api/socket.io"
-    },
-    {
       "source": "/api/:path*",
       "destination": "https://messaging-0.onrender.com/api/:path*"
     },
