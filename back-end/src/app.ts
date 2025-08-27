@@ -17,10 +17,14 @@ import { getOnlineUsers } from "@/controllers/user.controller";
 
 const port = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/myapp";
+const DOMAIN_URL = process.env.DOMAIN_URL || "http://localhost:5173";
 
 const app = express();
 const server = createServer(app);
-const io = new Server(server, { path: "/api/socket.io" });
+const io = new Server(server, {
+  cors: { origin: DOMAIN_URL, methods: ["GET", "POST"] },
+  path: "/api/socket.io",
+});
 
 mongoose
   .connect(MONGO_URI)
