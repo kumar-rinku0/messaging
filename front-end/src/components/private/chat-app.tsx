@@ -16,6 +16,11 @@ const ChatApp = () => {
   };
 
   useEffect(() => {
+    if ("Notification" in window) {
+      Notification.requestPermission().then((permission) => {
+        console.log("Notification permission:", permission);
+      });
+    }
     function onConnect() {
       setIsConnected(true);
     }
@@ -24,24 +29,22 @@ const ChatApp = () => {
       setIsConnected(false);
     }
 
-    socket.on("connect", onConnect);
-    socket.on("disconnect", onDisconnect);
-    socket.on("msg", (newMsg) => {
+    function onMessage(newMsg: { msg: string }) {
       console.log("Received chat message:", newMsg);
-      // chrome notification on chat message
-      if (Notification.permission !== "granted") {
-        Notification.requestPermission();
-      }
       if (Notification.permission === "granted") {
         new Notification("Chat Message", {
           body: `Received chat message: ${newMsg.msg}`,
         });
       }
-    });
+    }
+
+    socket.on("connect", onConnect);
+    socket.on("disconnect", onDisconnect);
+    socket.on("msg", onMessage);
     return () => {
       socket.off("connect", onConnect);
       socket.off("disconnect", onDisconnect);
-      socket.off("msg");
+      socket.off("msg", onMessage);
     };
   }, []);
   return (
