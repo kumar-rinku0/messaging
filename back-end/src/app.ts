@@ -70,6 +70,7 @@ io.on("connection", async (socket: Socket) => {
   socket.broadcast.emit("online-users", filteredUsers);
 
   socket.on("msg", (recipients: string[], msg) => {
+    console.log("recipients:", recipients);
     console.log("message received:", msg);
     recipients.map((recipientId) => {
       const recipientSocket = onlineUsers.find(
