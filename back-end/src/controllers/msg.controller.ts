@@ -11,14 +11,21 @@ const handleCreateMessage = async (req: Request, res: Response) => {
   });
   await message.save();
 
-  res.status(201).json(message);
+  return res.status(201).json(message);
 };
 
 const handleGetMessagesByChatId = async (req: Request, res: Response) => {
   const { chatId } = req.params;
+  const { page = 1, limit = 20 } = req.query;
 
-  const messages = await Message.find({ chat: chatId });
-  res.status(200).json(messages);
+  // Pagination logic (optional)
+  const skip = (Number(page) - 1) * Number(limit);
+
+  const messages = await Message.find({ chat: chatId })
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(Number(limit));
+  return res.status(200).json(messages.reverse());
 };
 
 const handleGetLastMessageByChatId = async (req: Request, res: Response) => {
@@ -27,7 +34,7 @@ const handleGetLastMessageByChatId = async (req: Request, res: Response) => {
   const lastMessage = await Message.findOne({ chat: chatId }).sort({
     createdAt: -1,
   });
-  res.status(200).json(lastMessage);
+  return res.status(200).json(lastMessage);
 };
 
 export {
