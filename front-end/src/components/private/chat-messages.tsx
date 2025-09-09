@@ -42,7 +42,7 @@ const ChatMessages = ({ chat }: { chat: ChatType }) => {
         setMessages((prevMessages) => [...prevMessages, response.data]);
         socket.emit(
           "msg",
-          chat.members.filter((member) => member._id !== token),
+          chat.members.map((member) => member._id).filter((id) => id !== token),
           response.data
         );
         setMsg(""); // Clear the input field after sending the message
