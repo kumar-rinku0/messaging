@@ -4,16 +4,18 @@ import type { ChatType, MessageType } from "@/types/api-types";
 
 const SingleChat = ({
   chat,
+  online,
   onClick,
 }: {
   chat: ChatType;
+  online: boolean;
   onClick: (chat: ChatType) => void;
 }) => {
   const token = localStorage.getItem("token");
   return (
     <div
       key={chat._id}
-      className="p-2 bg-blue-100"
+      className={`p-2 ${online ? "bg-green-100" : "bg-blue-100"}`}
       onClick={() => onClick(chat)}
     >
       {chat.members.find((member) => member._id !== token)?.username}

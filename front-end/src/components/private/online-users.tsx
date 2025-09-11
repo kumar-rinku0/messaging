@@ -107,14 +107,11 @@ const OnlineUsers = () => {
           <SingleChat
             chat={chat}
             key={chat._id}
+            online={chat.members.some((member) =>
+              onlineUsers.find((user) => user._id === member._id)
+            )}
             onClick={() => handleChatSelect(chat)}
           />
-          // <div key={chat._id} className="p-2 bg-blue-100">
-          //   {chat.members.find((member) => member._id !== token)?.username}
-          //   <div>
-          //     <LastMessage chatId={chat._id} />
-          //   </div>
-          // </div>
         ))}
       </div>
     </div>
