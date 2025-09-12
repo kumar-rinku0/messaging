@@ -1,23 +1,16 @@
-const navlist = [
-  { name: "Home", path: "/" },
-  { name: "Login", path: "/login" },
-  { name: "Register", path: "/register" },
-];
+import { Outlet } from "react-router";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/sidebar/app-sidebar";
 
 const Header = () => {
   return (
-    <div>
-      <nav>
-        <ul>
-          {navlist.map((item) => (
-            <li key={item.name}>
-              <a href={item.path}>{item.name}</a>
-            </li>
-          ))}
-        </ul>
-      </nav>
-    </div>
+    <SidebarProvider>
+      <AppSidebar />
+      <main>
+        <SidebarTrigger />
+        <Outlet />
+      </main>
+    </SidebarProvider>
   );
 };
-
 export default Header;
