@@ -1,17 +1,14 @@
 import React, { useEffect } from "react";
 import api from "@/services/api";
-import type { UserType, ChatType } from "@/types/api-types";
-import SingleChat from "./single-chat";
-import ChatMessages from "./chat-messages";
-import { Button } from "../ui/button";
+import type { UserType } from "@/types/api-types";
 import socket from "@/services/socket";
 
 type UsersType = UserType[];
 
 const OnlineUsers = () => {
   const [onlineUsers, setOnlineUsers] = React.useState<UsersType>([]);
-  const [chats, setChats] = React.useState<ChatType[]>([]);
-  const [selectedChat, setSelectedChat] = React.useState<ChatType | null>(null);
+  // const [chats, setChats] = React.useState<ChatType[]>([]);
+  // const [selectedChat, setSelectedChat] = React.useState<ChatType | null>(null);
   const token = localStorage.getItem("token");
   console.log(token);
 
@@ -29,19 +26,19 @@ const OnlineUsers = () => {
     };
   }, [token]);
 
-  useEffect(() => {
-    // api.get<ResponseType>("/users/all").then((response) => {
-    //   const users = response.data.users.filter((user) => user._id !== token);
-    //   setOnlineUsers(users);
-    // });
+  // useEffect(() => {
+  //   // api.get<ResponseType>("/users/all").then((response) => {
+  //   //   const users = response.data.users.filter((user) => user._id !== token);
+  //   //   setOnlineUsers(users);
+  //   // });
 
-    function getChats() {
-      api.get<ChatType[]>(`/chat/private/${token}`).then((response) => {
-        setChats(response.data);
-      });
-    }
-    getChats();
-  }, []);
+  //   function getChats() {
+  //     api.get<ChatType[]>(`/chat/private/${token}`).then((response) => {
+  //       setChats(response.data);
+  //     });
+  //   }
+  //   getChats();
+  // }, []);
 
   const handleUserClick = (user: UserType) => {
     api
@@ -51,39 +48,15 @@ const OnlineUsers = () => {
       })
       .then((response) => {
         console.log("Private chat created:", response.data);
-        if (chats.some((chat) => chat._id === response.data._id)) {
-          setSelectedChat(response.data);
-        } else {
-          setChats((prevChats) => [
-            ...prevChats,
-            {
-              ...response.data,
-              members: [user, { _id: token, username: "You" }],
-            },
-          ]);
-        }
       })
       .catch((error) => {
         console.error("Error creating private chat:", error);
       });
   };
 
-  const handleChatSelect = (chat: ChatType) => {
-    setSelectedChat(chat);
-  };
-
-  const handleCloseChat = () => {
-    setSelectedChat(null);
-  };
-
-  if (selectedChat) {
-    return (
-      <div>
-        <Button onClick={handleCloseChat}>Close Chat</Button>
-        <ChatMessages chat={selectedChat} />
-      </div>
-    );
-  }
+  // const handleChatSelect = (chat: ChatType) => {
+  //   setSelectedChat(chat);
+  // };
 
   return (
     <div className="min-h-40 bg-accent">
@@ -102,7 +75,7 @@ const OnlineUsers = () => {
           </div>
         ))}
       </div>
-      <div>
+      {/* <div>
         {chats.map((chat) => (
           <SingleChat
             chat={chat}
@@ -113,7 +86,7 @@ const OnlineUsers = () => {
             onClick={() => handleChatSelect(chat)}
           />
         ))}
-      </div>
+      </div> */}
     </div>
   );
 };

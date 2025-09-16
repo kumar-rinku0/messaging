@@ -1,12 +1,13 @@
 import api from "@/services/api";
-import type { ChatType, MessageType } from "@/types/api-types";
+import type { MessageType } from "@/types/api-types";
 import React, { useEffect } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import socket from "@/services/socket";
+import { useParams } from "react-router";
 
-const ChatMessages = ({ chat }: { chat: ChatType }) => {
-  const { _id: chatId } = chat;
+const ChatMessages = () => {
+  const { chatId } = useParams<{ chatId: string }>();
   const [messages, setMessages] = React.useState<MessageType[]>([]);
   const [msg, setMsg] = React.useState<string>("");
   const token = localStorage.getItem("token");
@@ -40,11 +41,11 @@ const ChatMessages = ({ chat }: { chat: ChatType }) => {
       .then((response) => {
         // Handle the response if needed
         setMessages((prevMessages) => [...prevMessages, response.data]);
-        socket.emit(
-          "msg",
-          chat.members.map((member) => member._id).filter((id) => id !== token),
-          response.data
-        );
+        // socket.emit(
+        //   "msg",
+        //   chat.members.map((member) => member._id).filter((id) => id !== token),
+        //   response.data
+        // );
         setMsg(""); // Clear the input field after sending the message
       });
   };
