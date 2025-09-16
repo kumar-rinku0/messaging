@@ -3,6 +3,7 @@ import Login from "@/components/auth/login";
 import Register from "@/components/auth/register";
 import ChatApp from "@/components/private/chat-app";
 import Header from "./components/header";
+import ChatMessages from "./components/private/chat-messages";
 export default function App() {
   const token = localStorage.getItem("token");
   if (!token) {
@@ -17,6 +18,7 @@ export default function App() {
     <Routes>
       <Route path="/" element={<Header />}>
         <Route path="/" element={<ChatApp />} />
+        <Route path="/:chatId" element={<ChatMessages />} />
       </Route>
     </Routes>
   );

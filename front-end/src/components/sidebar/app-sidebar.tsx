@@ -1,4 +1,4 @@
-import { Calendar, Home, Inbox, Search, Settings } from "lucide-react";
+// import { Calendar, Home, Inbox, Search, Settings } from "lucide-react";
 
 import {
   Sidebar,
@@ -10,37 +10,50 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import type { ChatType } from "@/types/api-types";
+import React from "react";
+import api from "@/services/api";
 
 // Menu items.
-const items = [
-  {
-    title: "Home",
-    url: "#",
-    icon: Home,
-  },
-  {
-    title: "Inbox",
-    url: "#",
-    icon: Inbox,
-  },
-  {
-    title: "Calendar",
-    url: "#",
-    icon: Calendar,
-  },
-  {
-    title: "Search",
-    url: "#",
-    icon: Search,
-  },
-  {
-    title: "Settings",
-    url: "#",
-    icon: Settings,
-  },
-];
+// const items = [
+//   {
+//     title: "Home",
+//     url: "#",
+//     icon: Home,
+//   },
+//   {
+//     title: "Inbox",
+//     url: "#",
+//     icon: Inbox,
+//   },
+//   {
+//     title: "Calendar",
+//     url: "#",
+//     icon: Calendar,
+//   },
+//   {
+//     title: "Search",
+//     url: "#",
+//     icon: Search,
+//   },
+//   {
+//     title: "Settings",
+//     url: "#",
+//     icon: Settings,
+//   },
+// ];
 
 export function AppSidebar() {
+  const [chats, setChats] = React.useState<ChatType[]>([]);
+  const token = localStorage.getItem("token");
+  React.useEffect(() => {
+    function getChats() {
+      api.get<ChatType[]>(`/chat/private/${token}`).then((response) => {
+        setChats(response.data);
+      });
+    }
+    getChats();
+  }, []);
   return (
     <Sidebar>
       <SidebarContent>
@@ -48,12 +61,16 @@ export function AppSidebar() {
           <SidebarGroupLabel>Application</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
+              {chats.map((chat) => (
+                <SidebarMenuItem key={chat._id}>
                   <SidebarMenuButton asChild>
-                    <a href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
+                    <a href={`/${chat._id}`}>
+                      <span>
+                        {
+                          chat.members.find((member) => member._id !== token)
+                            ?.username
+                        }
+                      </span>
                     </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
