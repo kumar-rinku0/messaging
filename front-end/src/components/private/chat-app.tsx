@@ -5,9 +5,6 @@ import OnlineUsers from "./online-users";
 
 const ChatApp = () => {
   const [isConnected, setIsConnected] = useState(socket.connected);
-  const token = localStorage.getItem("token");
-  socket.auth = { userId: token };
-  socket.connect();
 
   const handleLogout = () => {
     socket.disconnect();
