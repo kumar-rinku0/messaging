@@ -11,6 +11,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import type { ChatType } from "@/types/api-types";
+import { Link } from "react-router";
 import React from "react";
 import api from "@/services/api";
 
@@ -58,20 +59,20 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Application</SidebarGroupLabel>
+          <SidebarGroupLabel>Active Chats</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {chats.map((chat) => (
                 <SidebarMenuItem key={chat._id}>
                   <SidebarMenuButton asChild>
-                    <a href={`/${chat._id}`}>
+                    <Link to={`/${chat._id}`}>
                       <span>
                         {
                           chat.members.find((member) => member._id !== token)
                             ?.username
                         }
                       </span>
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
