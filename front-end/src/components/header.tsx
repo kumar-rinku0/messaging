@@ -1,6 +1,7 @@
 import { Outlet } from "react-router";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/sidebar/app-sidebar";
+// import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+// import { AppSidebar } from "@/components/sidebar/app-sidebar";
+import SideNav from "./sidebar/side-nav";
 import socket from "@/services/socket";
 
 const Header = () => {
@@ -8,13 +9,29 @@ const Header = () => {
   socket.auth = { userId: token };
   socket.connect();
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <main>
-        <SidebarTrigger />
+    <>
+      <div className="hidden md:flex">
+        <SideNav />
+        <main className="flex-1">
+          <Outlet />
+        </main>
+      </div>
+
+      {/* 
+      mobile device view
+      <div className="md:hidden">
         <Outlet />
-      </main>
-    </SidebarProvider>
+      </div> */}
+    </>
   );
+  // return (
+  //   <SidebarProvider>
+  //     <AppSidebar />
+  //     <main>
+  //       <SidebarTrigger />
+  //       <Outlet />
+  //     </main>
+  //   </SidebarProvider>
+  // );
 };
 export default Header;

@@ -5,7 +5,6 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import socket from "@/services/socket";
 import { useParams } from "react-router";
-import OnlineUsers from "./online-users";
 
 const ChatMessages = () => {
   const { chatId } = useParams<{ chatId: string }>();
@@ -53,9 +52,6 @@ const ChatMessages = () => {
 
   return (
     <div>
-      <OnlineUsers />
-      <h1>Chat Messages</h1>
-      <p>Messages for the selected chat will be displayed here.</p>
       <ul className="flex flex-col space-y-2">
         {messages.map((message) => (
           <li
