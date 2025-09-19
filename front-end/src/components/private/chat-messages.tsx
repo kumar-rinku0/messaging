@@ -6,16 +6,32 @@ import { Input } from "../ui/input";
 import socket from "@/services/socket";
 import { useParams } from "react-router";
 
+type ResponseType = {
+  messages: MessageType[];
+  page: number;
+  limit: number;
+  total: number;
+  chat: {
+    _id: string;
+    members: string[];
+  };
+};
+
 const ChatMessages = () => {
   const { chatId } = useParams<{ chatId: string }>();
   const [messages, setMessages] = React.useState<MessageType[]>([]);
+  const [chat, setChat] = React.useState<{
+    _id: string;
+    members: string[];
+  } | null>(null);
   const [msg, setMsg] = React.useState<string>("");
   const token = localStorage.getItem("token");
   useEffect(() => {
     function fetchChatMessages() {
-      api.get<MessageType[]>(`/msg/messages/${chatId}`).then((response) => {
+      api.get<ResponseType>(`/msg/messages/${chatId}`).then((response) => {
         // Handle the response and update state
-        setMessages(response.data);
+        setMessages(response.data.messages);
+        setChat(response.data.chat);
       });
     }
 
@@ -41,12 +57,13 @@ const ChatMessages = () => {
       .then((response) => {
         // Handle the response if needed
         setMessages((prevMessages) => [...prevMessages, response.data]);
-        // socket.emit(
-        //   "msg",
-        //   chat.members.map((member) => member._id).filter((id) => id !== token),
-        //   response.data
-        // );
         setMsg(""); // Clear the input field after sending the message
+        if (!chat) return;
+        socket.emit(
+          "msg",
+          chat.members.filter((id) => id !== token),
+          response.data
+        );
       });
   };
 
