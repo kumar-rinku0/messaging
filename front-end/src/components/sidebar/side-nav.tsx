@@ -39,7 +39,7 @@ export default function SideNav({ mobile }: { mobile?: boolean }) {
   const handleLogout = () => {
     socket.disconnect();
     localStorage.removeItem("token");
-    location.reload();
+    location.assign("/");
   };
 
   if (!token) {
