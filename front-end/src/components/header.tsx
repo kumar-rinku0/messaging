@@ -10,7 +10,7 @@ const Header = () => {
   socket.connect();
   return (
     <>
-      <div className="hidden md:flex">
+      <div className="flex">
         <SideNav />
         <main className="flex-1">
           <Outlet />

@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import Message from "@/models/msg.model";
+import Chat from "@/models/chat.model";
 
 const handleCreateMessage = async (req: Request, res: Response) => {
   const { chatId, sender, msg } = req.body;
@@ -16,6 +17,10 @@ const handleCreateMessage = async (req: Request, res: Response) => {
 
 const handleGetMessagesByChatId = async (req: Request, res: Response) => {
   const { chatId } = req.params;
+  const chat = await Chat.findById(chatId).select("_id members");
+  if (!chat) {
+    return res.status(404).json({ message: "Chat not found" });
+  }
   const { page = 1, limit = 20 } = req.query;
 
   // Pagination logic (optional)
@@ -25,7 +30,13 @@ const handleGetMessagesByChatId = async (req: Request, res: Response) => {
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(Number(limit));
-  return res.status(200).json(messages.reverse());
+  return res.status(200).json({
+    messages: messages.reverse(),
+    page,
+    limit,
+    total: messages.length,
+    chat,
+  });
 };
 
 const handleGetLastMessageByChatId = async (req: Request, res: Response) => {
