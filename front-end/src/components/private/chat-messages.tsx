@@ -68,14 +68,12 @@ const ChatMessages = () => {
   };
 
   return (
-    <div>
+    <div className="min-h[90vh] flex flex-col justify-between h-screen">
       <ul className="flex flex-col space-y-2">
         {messages.map((message) => (
           <li
             key={message._id}
-            className={
-              message.sender === token ? "w-sm text-right" : "w-sm text-left"
-            }
+            className={message.sender === token ? "text-right" : "text-left"}
           >
             {message.msg}
             <span className="text-xs text-gray-500">
@@ -88,8 +86,8 @@ const ChatMessages = () => {
         ))}
       </ul>
       {/* Placeholder for chat messages list */}
-      <div className="w-sm p-4 flex justify-center bg-gray-100">
-        <form onSubmit={handleSubmit} className="flex gap-2">
+      <div className="p-4 bg-gray-100">
+        <form onSubmit={handleSubmit} className="flex justify-between gap-2">
           <Input
             type="text"
             name="msg"

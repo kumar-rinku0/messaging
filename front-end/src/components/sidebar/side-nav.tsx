@@ -5,7 +5,7 @@ import api from "@/services/api";
 import socket from "@/services/socket";
 import { Button } from "../ui/button";
 
-export default function SideNav({ mobile }: { mobile?: boolean }) {
+export default function SideNav() {
   const [chats, setChats] = React.useState<ChatType[]>([]);
   const token = localStorage.getItem("token");
 
@@ -47,7 +47,7 @@ export default function SideNav({ mobile }: { mobile?: boolean }) {
   }
 
   return (
-    <div className={mobile ? "w-full h-screen" : "w-xs h-screen"}>
+    <div className="w-40 md:w-xs h-screen">
       <div className="border-r border-r-neutral-200 dark:border-r-neutral-800 transition-all duration-300 ease-in-out transform flex h-full bg-neutral-50 dark:bg-primary/50">
         <aside className="flex h-full flex-col w-full break-words px-4 overflow-x-hidden columns-1">
           {/* Top */}
