@@ -1,8 +1,8 @@
 import api from "@/services/api";
 import type { MessageType } from "@/types/api-types";
 import React, { useEffect } from "react";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
+import { AnimatePresence, motion } from "motion/react";
+import { PlusIcon } from "lucide-react";
 import socket from "@/services/socket";
 import { useParams } from "react-router";
 
@@ -68,34 +68,55 @@ const ChatMessages = () => {
   };
 
   return (
-    <div className="min-h[90vh] flex flex-col justify-between h-screen">
-      <ul className="flex flex-col space-y-2">
+    <div className="flex h-screen flex-col items-end justify-end pb-4">
+      <AnimatePresence>
         {messages.map((message) => (
-          <li
+          <motion.div
             key={message._id}
-            className={message.sender === token ? "text-right" : "text-left"}
+            layout="position"
+            className={`z-10 mt-2 max-w-[250px] break-words rounded-2xl ${
+              message.sender === token
+                ? "self-end bg-green-200 dark:bg-green-900"
+                : "self-start bg-gray-200 dark:bg-black"
+            }`}
+            layoutId={`container-[${messages.indexOf(message)}]`}
           >
-            {message.msg}
-            <span className="text-xs text-gray-500">
-              {new Date(message.createdAt).toLocaleTimeString("en-US", {
-                hour: "numeric",
-                minute: "numeric",
-              })}
-            </span>
-          </li>
+            <div className="px-3 py-2 text-[15px] leading-[15px] text-gray-900 dark:text-gray-100">
+              {message.msg}
+            </div>
+          </motion.div>
         ))}
-      </ul>
-      {/* Placeholder for chat messages list */}
-      <div className="p-4 bg-gray-100">
-        <form onSubmit={handleSubmit} className="flex justify-between gap-2">
-          <Input
+      </AnimatePresence>
+      <div className="mt-4 flex w-full">
+        <form onSubmit={handleSubmit} className="flex w-full">
+          <input
             type="text"
-            name="msg"
-            placeholder="Type your message..."
-            value={msg}
             onChange={(e) => setMsg(e.target.value)}
+            value={msg}
+            className="relative h-9 w-[250px] flex-grow rounded-full border border-gray-200 bg-white px-3 text-[15px] outline-none placeholder:text-gray-400 focus-visible:ring-0 focus-visible:ring-blue-500/20 focus-visible:ring-offset-1
+            dark:border-black/60 dark:bg-black dark:text-gray-50 dark:placeholder-gray-500 dark:focus-visible:ring-blue-500/20 dark:focus-visible:ring-offset-1 dark:focus-visible:ring-offset-gray-700"
+            placeholder="Type your message"
           />
-          <Button type="submit">Send</Button>
+          <motion.div
+            key={messages.length}
+            layout="position"
+            className="pointer-events-none absolute z-10 flex h-9 w-[250px] items-center overflow-hidden break-words rounded-full bg-gray-200 [word-break:break-word] dark:bg-black"
+            layoutId={`container-[${messages.length}]`}
+            initial={{ opacity: 0.6, zIndex: -1 }}
+            animate={{ opacity: 0.6, zIndex: -1 }}
+            exit={{ opacity: 1, zIndex: 1 }}
+          >
+            <div className="px-3 py-2 text-[15px] leading-[15px] text-gray-900 dark:text-gray-50">
+              {msg || "Type your message"}
+            </div>
+          </motion.div>
+          <button
+            type="submit"
+            className="ml-2 flex h-9 w-9 items-center justify-center rounded-full bg-gray-200
+            dark:bg-black"
+          >
+            <PlusIcon className="h-5 w-5 text-gray-600 dark:text-gray-50" />
+          </button>
         </form>
       </div>
     </div>
