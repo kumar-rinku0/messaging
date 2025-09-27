@@ -47,7 +47,7 @@ export default function SideNav() {
   }
 
   return (
-    <div className="w-40 md:w-xs h-screen">
+    <div className="w-60 md:w-xs h-screen">
       <div className="border-r border-r-neutral-200 dark:border-r-neutral-800 transition-all duration-300 ease-in-out transform flex h-full bg-neutral-50 dark:bg-primary/50">
         <aside className="flex h-full flex-col w-full break-words px-4 overflow-x-hidden columns-1">
           {/* Top */}
