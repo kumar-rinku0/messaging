@@ -68,7 +68,7 @@ const ChatMessages = () => {
   };
 
   return (
-    <div className="flex h-screen flex-col items-end justify-end pb-4">
+    <div className="flex h-screen flex-col items-end justify-end pb-4 px-1">
       <AnimatePresence>
         {messages.map((message) => (
           <motion.div
