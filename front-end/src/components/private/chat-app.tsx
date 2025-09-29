@@ -4,6 +4,7 @@ import {
   requestNotificationPermission,
   showNotification,
 } from "@/utils/notifications";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const ChatApp = () => {
   useEffect(() => {
@@ -20,6 +21,18 @@ const ChatApp = () => {
       socket.off("msg", onMessage);
     };
   }, []);
+
+  const isMobile = useIsMobile();
+  if (isMobile) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-center text-gray-500">
+          Chat interface is not available on mobile devices. Please use a
+          desktop or tablet for the full experience.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <>
