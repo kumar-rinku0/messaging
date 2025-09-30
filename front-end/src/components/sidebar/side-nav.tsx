@@ -4,6 +4,7 @@ import type { ChatType, UserType } from "@/types/api-types";
 import api from "@/services/api";
 import socket from "@/services/socket";
 import { Button } from "../ui/button";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function SideNav() {
   const [chats, setChats] = React.useState<ChatType[]>([]);
@@ -45,9 +46,13 @@ export default function SideNav() {
   if (!token) {
     return null;
   }
+  const isMobile = useIsMobile();
+  if (isMobile) {
+    return null; // Hide sidebar on mobile devices
+  }
 
   return (
-    <div className="w-60 md:w-xs h-screen">
+    <div className="w-full md:w-60 h-screen">
       <div className="border-r border-r-neutral-200 dark:border-r-neutral-800 transition-all duration-300 ease-in-out transform flex h-full bg-neutral-50 dark:bg-primary/50">
         <aside className="flex h-full flex-col w-full break-words px-4 overflow-x-hidden columns-1">
           {/* Top */}
