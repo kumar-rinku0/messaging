@@ -47,6 +47,8 @@ const ChatMessages = () => {
     fetchChatMessages();
     socket.on("msg", onChatMessage);
     return () => {
+      setMessages([]);
+      setTimeout(() => {}, 1000); // to avoid react state update on unmounted component error
       socket.off("msg", onChatMessage);
     };
   }, [chatId]);
@@ -75,17 +77,20 @@ const ChatMessages = () => {
 
   return (
     <div className="flex h-screen flex-col items-end justify-end pb-4 px-1">
-      <AnimatePresence mode="wait">
+      <AnimatePresence key={chatId}>
         {messages.map((message, idx) => (
           <motion.div
-            key={idx}
-            layout="position"
+            key={message._id}
+            layout
             className={`z-10 mt-2 max-w-[250px] break-words rounded-2xl ${
               message.sender === token
                 ? "self-end bg-green-200 dark:bg-green-900"
                 : "self-start bg-gray-200 dark:bg-black"
             }`}
-            layoutId={`container-[${idx}]`}
+            layoutId={`container-[${message._id}]`}
+            initial={{ opacity: 0, y: 20, transition: { delay: idx * 0.03 } }}
+            animate={{ opacity: 1, y: 0, transition: { delay: idx * 0.03 } }}
+            exit={{ opacity: 0, y: -20, transition: { delay: idx * 0.03 } }}
             transition={transitionDebug}
           >
             <div className="px-3 py-2 text-[15px] leading-[15px] text-gray-900 dark:text-gray-100">
