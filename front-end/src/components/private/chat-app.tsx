@@ -41,7 +41,7 @@ const ChatApp = () => {
         <SideNav mobile />
       </div> */}
       <div className="flex">
-        <div>Chat Messages</div>
+        <div> let's chat! </div>
       </div>
     </>
   );

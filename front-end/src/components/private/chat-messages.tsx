@@ -2,6 +2,7 @@ import api from "@/services/api";
 import type { MessageType } from "@/types/api-types";
 import React, { useEffect } from "react";
 import { AnimatePresence, motion } from "motion/react";
+import { easeOut } from "motion"; // Add this import at the top with other imports
 import { PlusIcon } from "lucide-react";
 import socket from "@/services/socket";
 import { useParams } from "react-router";
@@ -15,6 +16,11 @@ type ResponseType = {
     _id: string;
     members: string[];
   };
+};
+
+const transitionDebug = {
+  duration: 0.2,
+  ease: easeOut,
 };
 
 const ChatMessages = () => {
@@ -69,17 +75,18 @@ const ChatMessages = () => {
 
   return (
     <div className="flex h-screen flex-col items-end justify-end pb-4 px-1">
-      <AnimatePresence>
-        {messages.map((message) => (
+      <AnimatePresence mode="wait">
+        {messages.map((message, idx) => (
           <motion.div
-            key={message._id}
+            key={idx}
             layout="position"
             className={`z-10 mt-2 max-w-[250px] break-words rounded-2xl ${
               message.sender === token
                 ? "self-end bg-green-200 dark:bg-green-900"
                 : "self-start bg-gray-200 dark:bg-black"
             }`}
-            layoutId={`container-[${messages.indexOf(message)}]`}
+            layoutId={`container-[${idx}]`}
+            transition={transitionDebug}
           >
             <div className="px-3 py-2 text-[15px] leading-[15px] text-gray-900 dark:text-gray-100">
               {message.msg}
@@ -105,6 +112,7 @@ const ChatMessages = () => {
             initial={{ opacity: 0.6, zIndex: -1 }}
             animate={{ opacity: 0.6, zIndex: -1 }}
             exit={{ opacity: 1, zIndex: 1 }}
+            transition={transitionDebug}
           >
             <div className="px-3 py-2 text-[15px] leading-[15px] text-gray-900 dark:text-gray-50">
               {msg || "Type your message"}
