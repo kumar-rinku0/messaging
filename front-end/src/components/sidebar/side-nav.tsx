@@ -1,11 +1,16 @@
 import React, { Fragment, useEffect } from "react";
 import { Link, useLocation } from "react-router";
-import type { ChatType, UserType } from "@/types/api-types";
+import type { ChatType, MessageType, UserType } from "@/types/api-types";
 import api from "@/services/api";
 import socket from "@/services/socket";
 import { Button } from "../ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { LogOut } from "lucide-react";
+import { toast } from "sonner";
+// import {
+//   requestNotificationPermission,
+//   showNotification,
+// } from "@/utils/notifications";
 
 export default function SideNav() {
   const [chats, setChats] = React.useState<ChatType[]>([]);
@@ -18,6 +23,13 @@ export default function SideNav() {
 
   const [onlineUsers, setOnlineUsers] = React.useState<UserType[]>([]);
 
+  // async function onMessage(newMsg: { msg: string }) {
+  //   console.log("Received chat message:", newMsg);
+  //   const permissionGranted = await requestNotificationPermission();
+  //   if (permissionGranted) {
+  //     showNotification("New Message", { body: newMsg.msg });
+  //   }
+  // }
   useEffect(() => {
     const getOnlineUsers = (users: UserType[]) => {
       console.log("Online users from socket:", users);
@@ -29,12 +41,31 @@ export default function SideNav() {
         setChats(response.data);
       });
     };
+    function onChatMessage(newMsg: MessageType) {
+      console.log("msg ", newMsg.chat, "path ", pathname);
+      if (newMsg.chat !== pathname.slice(1)) {
+        toast.message(`new message`, {
+          description: newMsg.msg,
+          duration: 5000,
+          action: {
+            label: "View",
+            onClick: () => {
+              // navigate to chat
+              location.assign(`/${newMsg.chat}`);
+            },
+          },
+        });
+        return;
+      }
+    }
 
     getChats();
     socket.on("online-users", getOnlineUsers);
+    socket.on("msg", onChatMessage);
 
     return () => {
       socket.off("online-users", getOnlineUsers);
+      socket.off("msg", onChatMessage);
     };
   }, []);
 

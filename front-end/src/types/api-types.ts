@@ -2,6 +2,7 @@ export type MessageType = {
   _id: string;
   msg: string;
   sender: string;
+  chat: string;
   createdAt: Date;
 };
 

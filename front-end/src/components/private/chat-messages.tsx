@@ -6,6 +6,7 @@ import { easeOut } from "motion"; // Add this import at the top with other impor
 import { PlusIcon } from "lucide-react";
 import socket from "@/services/socket";
 import { useParams } from "react-router";
+// import { toast } from "sonner";
 
 type ResponseType = {
   messages: MessageType[];
@@ -42,6 +43,20 @@ const ChatMessages = () => {
     }
 
     function onChatMessage(newMsg: MessageType) {
+      if (newMsg.chat !== chatId) {
+        // toast.message(`new message`, {
+        //   description: newMsg.msg,
+        //   duration: 4000,
+        //   action: {
+        //     label: "View",
+        //     onClick: () => {
+        //       // navigate to chat
+        //       location.assign(`/${newMsg.chat}`);
+        //     },
+        //   },
+        // });
+        return;
+      }
       setMessages((prevMessages) => [...prevMessages, newMsg]);
     }
     fetchChatMessages();
