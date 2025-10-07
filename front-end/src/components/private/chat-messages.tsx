@@ -3,7 +3,7 @@ import type { MessageType } from "@/types/api-types";
 import React, { useEffect } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { easeOut } from "motion"; // Add this import at the top with other imports
-import { PlusIcon } from "lucide-react";
+import { SendHorizonal } from "lucide-react";
 import socket from "@/services/socket";
 import { useParams } from "react-router";
 // import { toast } from "sonner";
@@ -143,7 +143,7 @@ const ChatMessages = () => {
             className="ml-2 flex h-9 w-9 items-center justify-center rounded-full bg-gray-200
             dark:bg-black"
           >
-            <PlusIcon className="h-5 w-5 text-gray-600 dark:text-gray-50" />
+            <SendHorizonal className="h-5 w-5 text-gray-600 dark:text-gray-50" />
           </button>
         </form>
       </div>
