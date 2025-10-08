@@ -21,7 +21,7 @@ const handleGetMessagesByChatId = async (req: Request, res: Response) => {
   if (!chat) {
     return res.status(404).json({ message: "Chat not found" });
   }
-  const { page = 1, limit = 20 } = req.query;
+  const { page = 1, limit = 50 } = req.query;
 
   // Pagination logic (optional)
   const skip = (Number(page) - 1) * Number(limit);
