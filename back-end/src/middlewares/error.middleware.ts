@@ -15,7 +15,7 @@ const errorMiddleware = (
   console.error("Error middleware triggered:", err);
 
   // Optionally: handle specific errors
-  if (err.name === "ValidationError") {
+  if (err.name === "MongooseError") {
     return res.status(400).json({ message: err.message });
   }
 

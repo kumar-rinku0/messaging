@@ -2,8 +2,10 @@ import api from "@/services/api";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
+import { useState } from "react";
 
 const Register = () => {
+  const [error, setError] = useState<string | null>(null);
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
@@ -13,8 +15,11 @@ const Register = () => {
       .post("/users/register", obj)
       .then((response) => {
         console.log("Registration successful:", response.data);
+        localStorage.setItem("token", response.data.userId);
+        location.reload();
       })
       .catch((error) => {
+        setError(error.response?.data?.message || "Registration failed");
         console.error("Registration failed:", error);
       });
   };
@@ -35,7 +40,11 @@ const Register = () => {
             <Label htmlFor="password">Password:</Label>
             <Input type="password" id="password" name="password" required />
           </div>
+          <div>{error && <p className="text-red-500">{error}</p>}</div>
           <Button type="submit">Register</Button>
+          <a href="/login" className="text-blue-500 hover:underline">
+            Already have an account? Login
+          </a>
         </form>
       </div>
     </div>

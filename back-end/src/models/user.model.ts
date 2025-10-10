@@ -2,9 +2,17 @@ import { Schema, model } from "mongoose";
 import { saltAndHashPassword } from "@/utils/hashing";
 
 const userSchema = new Schema({
-  username: { type: String, required: true, unique: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
+  username: {
+    type: String,
+    required: [true, "username is required."],
+    unique: [true, "username must be unique."],
+  },
+  email: {
+    type: String,
+    required: [true, "email is required."],
+    unique: [true, "email must be unique."],
+  },
+  password: { type: String, required: [true, "password is required."] },
 });
 
 userSchema.pre("save", async function (next) {

@@ -38,6 +38,9 @@ const Login = () => {
           </div>
           <div>{error && <p className="text-red-500">{error}</p>}</div>
           <Button type="submit">Login</Button>
+          <a href="/register" className="text-blue-500 hover:underline">
+            Don't have an account? Register
+          </a>
         </form>
       </div>
     </div>
