@@ -4,11 +4,12 @@ import {
   handleUserLogin,
   handleUserRegistration,
 } from "@/controllers/user.controller";
+import asyncWrap from "@/utils/async-wrap";
 
 const userRouter = Router();
 
-userRouter.route("/register").post(handleUserRegistration);
-userRouter.route("/login").post(handleUserLogin);
-userRouter.route("/all").get(handleGetAllUsers); // Endpoint to get all users
+userRouter.route("/register").post(asyncWrap(handleUserRegistration));
+userRouter.route("/login").post(asyncWrap(handleUserLogin));
+userRouter.route("/all").get(asyncWrap(handleGetAllUsers)); // Endpoint to get all users
 
 export default userRouter;
