@@ -42,7 +42,7 @@ const Register = () => {
           </div>
           <div>{error && <p className="text-red-500">{error}</p>}</div>
           <Button type="submit">Register</Button>
-          <a href="/login" className="text-blue-500 hover:underline">
+          <a href="/" className="text-blue-500 hover:underline">
             Already have an account? Login
           </a>
         </form>
