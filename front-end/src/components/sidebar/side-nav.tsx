@@ -5,7 +5,7 @@ import api from "@/services/api";
 import socket from "@/services/socket";
 import { Button } from "../ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { LogOut } from "lucide-react";
+import { LogOut, MessageCircleMore } from "lucide-react";
 // import {
 //   requestNotificationPermission,
 //   showNotification,
@@ -73,6 +73,11 @@ export default function SideNav() {
       <div className="border-r border-r-neutral-200 dark:border-r-neutral-800 transition-all duration-300 ease-in-out transform flex h-full bg-neutral-50 dark:bg-primary/50">
         <aside className="flex h-full flex-col w-full break-words px-1 md:px-4 overflow-x-hidden columns-1">
           {/* Top */}
+          <Link to="/" className="flex items-center space-x-2 p-2">
+            <span className="font-semibold">
+              {isMobile ? <MessageCircleMore /> : "Messaging"}
+            </span>
+          </Link>
           <div className="mt-4 relative pb-2">
             <div className={`flex flex-col transition-all duration-200`}>
               {chats.map((chat) => {
