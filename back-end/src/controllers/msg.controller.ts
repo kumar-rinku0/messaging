@@ -17,7 +17,9 @@ const handleCreateMessage = async (req: Request, res: Response) => {
 
 const handleGetMessagesByChatId = async (req: Request, res: Response) => {
   const { chatId } = req.params;
-  const chat = await Chat.findById(chatId).select("_id members");
+  const chat = await Chat.findById(chatId)
+    .select("_id members")
+    .populate("members", "username _id");
   if (!chat) {
     return res.status(404).json({ message: "Chat not found" });
   }
