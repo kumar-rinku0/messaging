@@ -33,7 +33,15 @@ const handleUserLogin = async (req: Request, res: Response) => {
 };
 
 const handleGetAllUsers = async (req: Request, res: Response) => {
-  const users = await User.find({});
+  const users = await User.find({}).select("-password -email -__v");
+  return res.status(200).json({ users: users });
+};
+
+const handleGetSearchedUser = async (req: Request, res: Response) => {
+  const { query } = req.params;
+  const users = await User.find({
+    username: { $regex: query, $options: "i" },
+  }).select("-password -email -__v");
   return res.status(200).json({ users: users });
 };
 
@@ -50,5 +58,6 @@ export {
   handleUserRegistration,
   handleUserLogin,
   handleGetAllUsers,
+  handleGetSearchedUser,
   getOnlineUsers,
 };
