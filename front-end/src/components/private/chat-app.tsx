@@ -2,7 +2,10 @@ import { Input } from "../ui/input";
 import { Search } from "lucide-react";
 import { Button } from "../ui/button";
 import api from "@/services/api";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import type { MessageType } from "@/types/api-types";
+import { toast } from "sonner";
+import socket from "@/services/socket";
 
 type ResponseType = {
   users: {
@@ -14,6 +17,26 @@ type ResponseType = {
 
 const ChatApp = () => {
   const token = localStorage.getItem("token");
+  useEffect(() => {
+    function onChatMessage(newMsg: MessageType) {
+      toast.message(`new message`, {
+        description: newMsg.msg,
+        duration: 5000,
+        action: {
+          label: "View",
+          onClick: () => {
+            // navigate to chat
+            location.assign(`/${newMsg.chat}`);
+          },
+        },
+      });
+    }
+    socket.on("msg", onChatMessage);
+    return () => {
+      socket.off("msg", onChatMessage);
+    };
+  }, []);
+
   if (!token) {
     return <div>Please log in to access the chat application.</div>;
   }
