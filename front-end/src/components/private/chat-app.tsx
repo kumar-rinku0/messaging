@@ -1,18 +1,8 @@
-import { useIsMobile } from "@/hooks/use-mobile";
+import { Input } from "../ui/input";
+import { Search } from "lucide-react";
+import { Button } from "../ui/button";
 
 const ChatApp = () => {
-  const isMobile = useIsMobile();
-  if (isMobile) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <p className="text-center text-gray-500">
-          Chat interface is not available on mobile devices. Please use a
-          desktop or tablet for the full experience.
-        </p>
-      </div>
-    );
-  }
-
   return (
     <>
       {/* mobile device view
@@ -20,7 +10,14 @@ const ChatApp = () => {
         <SideNav mobile />
       </div> */}
       <div className="flex">
-        <div> let's chat! </div>
+        <div>
+          <div className="flex items-center justify-center">
+            <Input placeholder="Search..." className="m-4" />
+            <Button variant={"outline"} className="m-4">
+              <Search />
+            </Button>
+          </div>
+        </div>
       </div>
     </>
   );
