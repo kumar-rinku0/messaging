@@ -6,7 +6,7 @@ import { easeOut } from "motion"; // Add this import at the top with other impor
 import { SendHorizonal } from "lucide-react";
 import socket from "@/services/socket";
 import { useParams } from "react-router";
-// import { toast } from "sonner";
+import { toast } from "sonner";
 
 type ResponseType = {
   messages: MessageType[];
@@ -44,17 +44,17 @@ const ChatMessages = () => {
 
     function onChatMessage(newMsg: MessageType) {
       if (newMsg.chat !== chatId) {
-        // toast.message(`new message`, {
-        //   description: newMsg.msg,
-        //   duration: 4000,
-        //   action: {
-        //     label: "View",
-        //     onClick: () => {
-        //       // navigate to chat
-        //       location.assign(`/${newMsg.chat}`);
-        //     },
-        //   },
-        // });
+        toast.message(`new message`, {
+          description: newMsg.msg,
+          duration: 5000,
+          action: {
+            label: "View",
+            onClick: () => {
+              // navigate to chat
+              location.assign(`/${newMsg.chat}`);
+            },
+          },
+        });
         return;
       }
       setMessages((prevMessages) => [...prevMessages, newMsg]);
@@ -63,8 +63,8 @@ const ChatMessages = () => {
     socket.on("msg", onChatMessage);
     return () => {
       setMessages([]);
-      setTimeout(() => {}, 1000); // to avoid react state update on unmounted component error
       socket.off("msg", onChatMessage);
+      setTimeout(() => {}, 1000); // to avoid react state update on unmounted component error
     };
   }, [chatId]);
 

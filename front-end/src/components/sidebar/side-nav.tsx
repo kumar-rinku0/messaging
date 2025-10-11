@@ -1,12 +1,11 @@
 import React, { Fragment, useEffect } from "react";
 import { Link, useLocation } from "react-router";
-import type { ChatType, MessageType, UserType } from "@/types/api-types";
+import type { ChatType, UserType } from "@/types/api-types";
 import api from "@/services/api";
 import socket from "@/services/socket";
 import { Button } from "../ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { LogOut } from "lucide-react";
-import { toast } from "sonner";
 // import {
 //   requestNotificationPermission,
 //   showNotification,
@@ -30,42 +29,31 @@ export default function SideNav() {
   //     showNotification("New Message", { body: newMsg.msg });
   //   }
   // }
+
+  useEffect(() => {
+    if (!token) {
+      location.assign("/");
+    } else {
+      const getChats = () => {
+        api.get<ChatType[]>(`/chat/private/${token}`).then((response) => {
+          setChats(response.data);
+        });
+      };
+      getChats();
+    }
+  }, [token]);
+
   useEffect(() => {
     const getOnlineUsers = (users: UserType[]) => {
       console.log("Online users from socket:", users);
       const filtered = users.filter((user) => user._id !== token);
       setOnlineUsers(filtered);
     };
-    const getChats = () => {
-      api.get<ChatType[]>(`/chat/private/${token}`).then((response) => {
-        setChats(response.data);
-      });
-    };
-    function onChatMessage(newMsg: MessageType) {
-      console.log("msg ", newMsg.chat, "path ", pathname);
-      if (newMsg.chat !== pathname.slice(1)) {
-        toast.message(`new message`, {
-          description: newMsg.msg,
-          duration: 5000,
-          action: {
-            label: "View",
-            onClick: () => {
-              // navigate to chat
-              location.assign(`/${newMsg.chat}`);
-            },
-          },
-        });
-        return;
-      }
-    }
 
-    getChats();
     socket.on("online-users", getOnlineUsers);
-    socket.on("msg", onChatMessage);
 
     return () => {
       socket.off("online-users", getOnlineUsers);
-      socket.off("msg", onChatMessage);
     };
   }, []);
 

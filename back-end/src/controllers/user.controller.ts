@@ -38,9 +38,9 @@ const handleGetAllUsers = async (req: Request, res: Response) => {
 };
 
 const handleGetSearchedUser = async (req: Request, res: Response) => {
-  const { query } = req.params;
+  const { q } = req.query;
   const users = await User.find({
-    username: { $regex: query, $options: "i" },
+    username: { $regex: q, $options: "i" },
   }).select("-password -email -__v");
   return res.status(200).json({ users: users });
 };
