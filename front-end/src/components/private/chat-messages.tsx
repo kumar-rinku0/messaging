@@ -8,12 +8,14 @@ import socket from "@/services/socket";
 import { useParams } from "react-router";
 import { toast } from "sonner";
 import { ScrollArea } from "../ui/scroll-area";
+import { Button } from "../ui/button";
 
 type ResponseType = {
   messages: MessageType[];
+  totalMessages: number;
   page: number;
+  totalPages: number;
   limit: number;
-  total: number;
   chat: {
     _id: string;
     members: { _id: string; username: string }[];
@@ -28,21 +30,42 @@ const transitionDebug = {
 const ChatMessages = () => {
   const { chatId } = useParams<{ chatId: string }>();
   const [messages, setMessages] = React.useState<MessageType[]>([]);
+  const [count, setCount] = React.useState<{
+    totalMessages: number;
+    page: number;
+    totalPages: number;
+    limit: number;
+  }>({ totalMessages: 0, page: 1, totalPages: 1, limit: 0 });
   const [chat, setChat] = React.useState<{
     _id: string;
     members: { _id: string; username: string }[];
   } | null>(null);
   const [msg, setMsg] = React.useState<string>("");
   const token = localStorage.getItem("token");
-  useEffect(() => {
-    function fetchChatMessages() {
-      api.get<ResponseType>(`/msg/messages/${chatId}`).then((response) => {
+  function fetchChatMessages(page: number) {
+    api
+      .get<ResponseType>(`/msg/messages/${chatId}?page=${page}`)
+      .then((response) => {
         // Handle the response and update state
-        setMessages(response.data.messages);
-        setChat(response.data.chat);
+        const {
+          messages: newMessages,
+          totalMessages,
+          chat,
+          totalPages,
+          page,
+          limit,
+        } = response.data;
+        if (page == 1) {
+          setMessages(newMessages);
+        } else {
+          const allMessages = [...newMessages, ...messages];
+          setMessages(allMessages);
+        }
+        setCount({ totalMessages, page, totalPages, limit });
+        setChat(chat);
       });
-    }
-
+  }
+  useEffect(() => {
     function onChatMessage(newMsg: MessageType) {
       if (newMsg.chat !== chatId) {
         toast.message(`new message`, {
@@ -60,12 +83,12 @@ const ChatMessages = () => {
       }
       setMessages((prevMessages) => [...prevMessages, newMsg]);
     }
-    fetchChatMessages();
+    fetchChatMessages(1);
     socket.on("msg", onChatMessage);
     return () => {
       setMessages([]);
       socket.off("msg", onChatMessage);
-      setTimeout(() => {}, 1000); // to avoid react state update on unmounted component error
+      // setTimeout(() => {}, 1000); // to avoid react state update on unmounted component error
     };
   }, [chatId]);
 
@@ -94,9 +117,14 @@ const ChatMessages = () => {
   };
 
   const bottomRef = useRef<HTMLDivElement | null>(null);
+  const shouldScrollRef = useRef<boolean>(true);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (shouldScrollRef.current) {
+      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    } else {
+      shouldScrollRef.current = true;
+    }
   }, [messages]);
 
   return (
@@ -117,6 +145,20 @@ const ChatMessages = () => {
       {/* <div className="flex h-[calc(100vh-40px)] flex-col items-end justify-end pb-4 px-1"> */}
       <div className="flex h-[calc(100vh-40px)] flex-col pb-4 px-1">
         <ScrollArea className="flex-1 w-full overflow-y-auto">
+          {messages.length > 10 && count.page < count.totalPages ? (
+            <Button
+              className="w-full text-center"
+              variant="link"
+              onClick={() => {
+                shouldScrollRef.current = false;
+                fetchChatMessages(count.page + 1);
+              }}
+            >
+              load more
+            </Button>
+          ) : (
+            <div className="p-1" />
+          )}
           <div className="flex flex-col gap-2 px-2">
             {messages.map((message) => (
               <motion.div
@@ -137,7 +179,7 @@ const ChatMessages = () => {
 
         {/* </div> */}
 
-        <div className="mt-4 flex w-full">
+        <div className="flex w-full">
           <form onSubmit={handleSubmit} className="flex w-full">
             <input
               type="text"
