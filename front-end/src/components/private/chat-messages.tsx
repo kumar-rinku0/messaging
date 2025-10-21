@@ -1,6 +1,6 @@
 import api from "@/services/api";
 import type { MessageType } from "@/types/api-types";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
 import { easeOut } from "motion"; // Add this import at the top with other imports
 import { ArrowLeft, SendHorizonal } from "lucide-react";
@@ -8,12 +8,14 @@ import socket from "@/services/socket";
 import { useParams } from "react-router";
 import { toast } from "sonner";
 import { ScrollArea } from "../ui/scroll-area";
+import { Button } from "../ui/button";
 
 type ResponseType = {
   messages: MessageType[];
+  totalMessages: number;
   page: number;
+  totalPages: number;
   limit: number;
-  total: number;
   chat: {
     _id: string;
     members: { _id: string; username: string }[];
@@ -27,7 +29,14 @@ const transitionDebug = {
 
 const ChatMessages = () => {
   const { chatId } = useParams<{ chatId: string }>();
+  const [page, setPage] = useState(1);
   const [messages, setMessages] = React.useState<MessageType[]>([]);
+  const [count, setCount] = React.useState<{
+    totalMessages: number;
+    page: number;
+    totalPages: number;
+    limit: number;
+  }>({ totalMessages: 0, page: 1, totalPages: 1, limit: 0 });
   const [chat, setChat] = React.useState<{
     _id: string;
     members: { _id: string; username: string }[];
@@ -36,11 +45,16 @@ const ChatMessages = () => {
   const token = localStorage.getItem("token");
   useEffect(() => {
     function fetchChatMessages() {
-      api.get<ResponseType>(`/msg/messages/${chatId}`).then((response) => {
-        // Handle the response and update state
-        setMessages(response.data.messages);
-        setChat(response.data.chat);
-      });
+      api
+        .get<ResponseType>(`/msg/messages/${chatId}?page=${page}`)
+        .then((response) => {
+          // Handle the response and update state
+          const { messages, totalMessages, chat, totalPages, page, limit } =
+            response.data;
+          setMessages(messages);
+          setCount({ totalMessages, page, totalPages, limit });
+          setChat(chat);
+        });
     }
 
     function onChatMessage(newMsg: MessageType) {
@@ -67,7 +81,7 @@ const ChatMessages = () => {
       socket.off("msg", onChatMessage);
       setTimeout(() => {}, 1000); // to avoid react state update on unmounted component error
     };
-  }, [chatId]);
+  }, [chatId, page]);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -117,6 +131,17 @@ const ChatMessages = () => {
       {/* <div className="flex h-[calc(100vh-40px)] flex-col items-end justify-end pb-4 px-1"> */}
       <div className="flex h-[calc(100vh-40px)] flex-col pb-4 px-1">
         <ScrollArea className="flex-1 w-full overflow-y-auto">
+          {messages.length > 10 && count.page < count.totalPages ? (
+            <Button
+              className="w-full text-center"
+              variant="link"
+              onClick={() => setPage((lastCount) => lastCount + 1)}
+            >
+              load more
+            </Button>
+          ) : (
+            <div className="p-1" />
+          )}
           <div className="flex flex-col gap-2 px-2">
             {messages.map((message) => (
               <motion.div
@@ -137,7 +162,7 @@ const ChatMessages = () => {
 
         {/* </div> */}
 
-        <div className="mt-4 flex w-full">
+        <div className="flex w-full">
           <form onSubmit={handleSubmit} className="flex w-full">
             <input
               type="text"
