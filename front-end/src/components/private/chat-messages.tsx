@@ -1,12 +1,13 @@
 import api from "@/services/api";
 import type { MessageType } from "@/types/api-types";
-import React, { useEffect } from "react";
-import { AnimatePresence, motion } from "motion/react";
+import React, { useEffect, useRef } from "react";
+import { motion } from "motion/react";
 import { easeOut } from "motion"; // Add this import at the top with other imports
 import { ArrowLeft, SendHorizonal } from "lucide-react";
 import socket from "@/services/socket";
 import { useParams } from "react-router";
 import { toast } from "sonner";
+import { ScrollArea } from "../ui/scroll-area";
 
 type ResponseType = {
   messages: MessageType[];
@@ -92,6 +93,12 @@ const ChatMessages = () => {
       });
   };
 
+  const bottomRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
   return (
     <div>
       <div className="h-10 p-2 flex items-center bg-white border-b-2 border-b-amber-100">
@@ -107,29 +114,29 @@ const ChatMessages = () => {
           {chat?.members.find((member) => member._id !== token)?.username}
         </span>
       </div>
-      <div className="flex h-[calc(100vh-40px)] flex-col items-end justify-end pb-4 px-1">
-        <AnimatePresence key={chatId}>
-          {messages.map((message, idx) => (
-            <motion.div
-              key={message._id}
-              layout
-              className={`-z-10 mt-2 max-w-[250px] break-words rounded-2xl ${
-                message.sender === token
-                  ? "self-end bg-green-200 dark:bg-green-900"
-                  : "self-start bg-gray-200 dark:bg-black"
-              }`}
-              layoutId={`container-[${message._id}]`}
-              initial={{ opacity: 0, y: 20, transition: { delay: idx * 0.03 } }}
-              animate={{ opacity: 1, y: 0, transition: { delay: idx * 0.03 } }}
-              exit={{ opacity: 0, y: -20, transition: { delay: idx * 0.03 } }}
-              transition={transitionDebug}
-            >
-              <div className="px-3 py-2 text-[15px] leading-[15px] text-gray-900 dark:text-gray-100">
+      {/* <div className="flex h-[calc(100vh-40px)] flex-col items-end justify-end pb-4 px-1"> */}
+      <div className="flex h-[calc(100vh-40px)] flex-col pb-4 px-1">
+        <ScrollArea className="flex-1 w-full overflow-y-auto">
+          <div className="flex flex-col gap-2 px-2">
+            {messages.map((message) => (
+              <motion.div
+                key={message._id}
+                className={`max-w-[80%] px-4 py-2 rounded-xl text-sm shadow
+          ${
+            message.sender === token
+              ? "self-end bg-green-500 text-white"
+              : "self-start bg-gray-200 text-gray-900 dark:bg-gray-800 dark:text-white"
+          }`}
+              >
                 {message.msg}
-              </div>
-            </motion.div>
-          ))}
-        </AnimatePresence>
+              </motion.div>
+            ))}
+            <div ref={bottomRef} />
+          </div>
+        </ScrollArea>
+
+        {/* </div> */}
+
         <div className="mt-4 flex w-full">
           <form onSubmit={handleSubmit} className="flex w-full">
             <input
