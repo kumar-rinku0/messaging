@@ -38,7 +38,7 @@ const handleGetMessagesByChatId = async (req: Request, res: Response) => {
   return res.status(200).json({
     messages: messages.reverse(),
     totalMessages: totalMessages,
-    page,
+    page: Number(page),
     totalPages: Math.ceil(totalMessages / Number(limit)),
     limit,
     chat,
