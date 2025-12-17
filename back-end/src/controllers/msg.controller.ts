@@ -40,7 +40,29 @@ const handleGetMessagesByChatId = async (req: Request, res: Response) => {
     totalMessages: totalMessages,
     page: Number(page),
     totalPages: Math.ceil(totalMessages / Number(limit)),
+    sort: -1,
     limit,
+    chat,
+  });
+};
+
+const handleGetAllMessagesByChatId = async (req: Request, res: Response) => {
+  const { chatId } = req.params;
+  const chat = await Chat.findById(chatId)
+    .select("_id members")
+    .populate("members", "username _id");
+  if (!chat) {
+    return res.status(404).json({ message: "Chat not found" });
+  }
+  const query = { chat: chatId };
+  const sorted = -1;
+  const totalMessages = await Message.countDocuments(query);
+  const messages = await Message.find(query).sort({ createdAt: sorted });
+
+  return res.status(200).json({
+    messages: messages,
+    totalMessages: totalMessages,
+    sort: sorted,
     chat,
   });
 };
@@ -58,4 +80,5 @@ export {
   handleCreateMessage,
   handleGetMessagesByChatId,
   handleGetLastMessageByChatId,
+  handleGetAllMessagesByChatId,
 };
