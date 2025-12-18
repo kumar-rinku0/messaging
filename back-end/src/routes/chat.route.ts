@@ -10,7 +10,7 @@ const chatRouter = Router();
 
 chatRouter.route("/group").post(handleCreateGroupChat);
 chatRouter.route("/private").post(handleCreatePrivateChat);
-chatRouter.route("/private/:userId").get(handleGetPrivateChat);
-chatRouter.route("/:chatId").get(handleGetChatById);
+chatRouter.route("/private/userId/:userId").get(handleGetPrivateChat);
+chatRouter.route("/chatId/:chatId").get(handleGetChatById);
 
 export default chatRouter;

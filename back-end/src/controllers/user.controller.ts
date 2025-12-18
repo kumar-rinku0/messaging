@@ -13,28 +13,32 @@ const handleUserRegistration = async (req: Request, res: Response) => {
 
   await newUser.save();
 
-  res
-    .status(201)
-    .json({ message: "User registered successfully", userId: newUser._id });
+  res.status(201).json({
+    message: "User registered successfully",
+    userId: newUser._id,
+    ok: true,
+  });
 };
 
 const handleUserLogin = async (req: Request, res: Response) => {
   const { username, password } = req.body;
   const user = await User.findOne({ username });
   if (!user) {
-    return res.status(404).json({ message: "User not found" });
+    return res.status(404).json({ message: "User not found", ok: false });
   }
   const isRightPassword = verifyPassword(password, user.password);
   if (!isRightPassword) {
-    return res.status(401).json({ message: "Invalid password" });
+    return res.status(401).json({ message: "Invalid password", ok: false });
   }
   const token = crypto.randomBytes(32).toString("hex"); // Generate a token (use a proper library in production)
-  return res.status(200).json({ message: "Login successful", user, token });
+  return res
+    .status(200)
+    .json({ message: "Login successful", userId: user._id, token, ok: true });
 };
 
 const handleGetAllUsers = async (req: Request, res: Response) => {
   const users = await User.find({}).select("-password -email -__v");
-  return res.status(200).json({ users: users });
+  return res.status(200).json({ users: users, ok: true });
 };
 
 const handleGetSearchedUser = async (req: Request, res: Response) => {
@@ -42,7 +46,7 @@ const handleGetSearchedUser = async (req: Request, res: Response) => {
   const users = await User.find({
     username: { $regex: q, $options: "i" },
   }).select("-password -email -__v");
-  return res.status(200).json({ users: users });
+  return res.status(200).json({ users: users, ok: true });
 };
 
 const getOnlineUsers = async (

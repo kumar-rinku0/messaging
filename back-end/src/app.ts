@@ -40,14 +40,14 @@ app.use(express.json({ limit: "40kb" }));
 app.use(express.urlencoded({ limit: "40kb", extended: true }));
 
 app.get("/", (req, res) => {
-  return res.json({ req: "success" });
+  return res.json({ req: "success", ok: true });
 });
 
 app.get("/api", (req, res) => {
-  return res.json({ req: "success" });
+  return res.json({ req: "success", ok: true });
 });
 
-app.use("/api/users", userRouter);
+app.use("/api/user", userRouter);
 app.use("/api/chat", chatRouter);
 app.use("/api/msg", msgRouter);
 

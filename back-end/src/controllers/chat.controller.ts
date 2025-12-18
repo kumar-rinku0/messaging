@@ -17,10 +17,10 @@ const handleCreatePrivateChat = async (req: Request, res: Response) => {
     });
     await chat.save();
     await chat.populate("members", "username _id");
-    return res.status(201).json(chat);
+    return res.status(201).json({ chat, ok: true });
   }
 
-  return res.status(200).json(oldChat);
+  return res.status(200).json({ oldChat, ok: true });
 };
 
 const handleCreateGroupChat = async (req: Request, res: Response) => {
@@ -32,7 +32,7 @@ const handleCreateGroupChat = async (req: Request, res: Response) => {
   });
   await chat.save();
 
-  res.status(201).json(chat);
+  res.status(201).json({ chat, ok: true });
 };
 
 const handleGetChatById = async (req: Request, res: Response) => {
@@ -40,10 +40,10 @@ const handleGetChatById = async (req: Request, res: Response) => {
 
   const chat = await Chat.findById(chatId).populate("members");
   if (!chat) {
-    return res.status(404).json({ message: "Chat not found" });
+    return res.status(404).json({ message: "Chat not found", ok: false });
   }
 
-  res.status(200).json(chat);
+  res.status(200).json({ chat, ok: true });
 };
 
 const handleGetPrivateChat = async (req: Request, res: Response) => {
@@ -54,10 +54,10 @@ const handleGetPrivateChat = async (req: Request, res: Response) => {
     name: "private-chat",
   }).populate("members");
   if (!chat) {
-    return res.status(404).json({ message: "Chat not found" });
+    return res.status(404).json({ message: "Chat not found", ok: false });
   }
 
-  res.status(200).json(chat);
+  res.status(200).json({ chat, ok: true });
 };
 
 export {

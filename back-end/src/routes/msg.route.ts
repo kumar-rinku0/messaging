@@ -8,9 +8,11 @@ import {
 
 const msgRouter = Router();
 
-msgRouter.route("/").post(handleCreateMessage);
+msgRouter.route("/create").post(handleCreateMessage);
 msgRouter.route("/all/chatId/:chatId").get(handleGetAllMessagesByChatId);
-msgRouter.route("/messages/:chatId").get(handleGetMessagesByChatId);
-msgRouter.route("/last-message/:chatId").get(handleGetLastMessageByChatId);
+msgRouter.route("/chatId/:chatId").get(handleGetMessagesByChatId);
+msgRouter
+  .route("/last-message/chatId/:chatId")
+  .get(handleGetLastMessageByChatId);
 
 export default msgRouter;

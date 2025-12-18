@@ -12,7 +12,7 @@ const handleCreateMessage = async (req: Request, res: Response) => {
   });
   await message.save();
 
-  return res.status(201).json(message);
+  return res.status(201).json({ message, ok: true });
 };
 
 const handleGetMessagesByChatId = async (req: Request, res: Response) => {
@@ -21,7 +21,7 @@ const handleGetMessagesByChatId = async (req: Request, res: Response) => {
     .select("_id members")
     .populate("members", "username _id");
   if (!chat) {
-    return res.status(404).json({ message: "Chat not found" });
+    return res.status(404).json({ message: "Chat not found", ok: false });
   }
   const { page = 1, limit = 20 } = req.query;
 
@@ -43,6 +43,7 @@ const handleGetMessagesByChatId = async (req: Request, res: Response) => {
     sort: -1,
     limit,
     chat,
+    ok: true,
   });
 };
 
@@ -52,7 +53,7 @@ const handleGetAllMessagesByChatId = async (req: Request, res: Response) => {
     .select("_id members")
     .populate("members", "username _id");
   if (!chat) {
-    return res.status(404).json({ message: "Chat not found" });
+    return res.status(404).json({ message: "Chat not found", ok: false });
   }
   const query = { chat: chatId };
   const sorted = -1;
@@ -64,6 +65,7 @@ const handleGetAllMessagesByChatId = async (req: Request, res: Response) => {
     totalMessages: totalMessages,
     sort: sorted,
     chat,
+    ok: true,
   });
 };
 
@@ -73,7 +75,7 @@ const handleGetLastMessageByChatId = async (req: Request, res: Response) => {
   const lastMessage = await Message.findOne({ chat: chatId }).sort({
     createdAt: -1,
   });
-  return res.status(200).json(lastMessage);
+  return res.status(200).json({ lastMessage, ok: true });
 };
 
 export {
