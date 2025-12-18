@@ -47,7 +47,7 @@ const ChatApp = () => {
     const formData = new FormData(e.currentTarget);
     const searchTerm = formData.get("search");
     console.log("Searching for:", searchTerm);
-    api.get(`/users/search?q=${searchTerm}`).then((response) => {
+    api.get(`/user/search?q=${searchTerm}`).then((response) => {
       console.log("Search results:", response.data);
       setSearchContent(response.data.users);
     });
@@ -93,7 +93,7 @@ const ChatApp = () => {
                             "Private chat created or fetched:",
                             response.data
                           );
-                          location.assign(`/${response.data._id}`); // Redirect to the chat page
+                          location.assign(`/${response.data.chat._id}`); // Redirect to the chat page
                         });
                     }}
                   >

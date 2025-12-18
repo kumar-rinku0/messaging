@@ -35,9 +35,11 @@ export default function SideNav() {
       location.assign("/");
     } else {
       const getChats = () => {
-        api.get<ChatType[]>(`/chat/private/${token}`).then((response) => {
-          setChats(response.data);
-        });
+        api
+          .get<{ chat: ChatType[] }>(`/chat/private/userId/${token}`)
+          .then((response) => {
+            setChats(response.data.chat);
+          });
       };
       getChats();
     }

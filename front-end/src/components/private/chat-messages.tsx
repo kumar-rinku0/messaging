@@ -44,7 +44,7 @@ const ChatMessages = () => {
   const token = localStorage.getItem("token");
   function fetchChatMessages(page: number) {
     api
-      .get<ResponseType>(`/msg/messages/${chatId}?page=${page}`)
+      .get<ResponseType>(`/msg/chatId/${chatId}?page=${page}`)
       .then((response) => {
         // Handle the response and update state
         const {
@@ -100,10 +100,11 @@ const ChatMessages = () => {
       return;
     }
     api
-      .post(`/msg`, { msg: msg, chatId: chatId, sender: token })
+      .post(`/msg/create`, { msg: msg, chatId: chatId, sender: token })
       .then((response) => {
         // Handle the response if needed
-        setMessages((prevMessages) => [...prevMessages, response.data]);
+        const { message } = response.data;
+        setMessages((prevMessages) => [...prevMessages, message]);
         setMsg(""); // Clear the input field after sending the message
         if (!chat) return;
         socket.emit(
@@ -111,7 +112,7 @@ const ChatMessages = () => {
           chat.members
             .filter((member) => member._id !== token)
             .map((m) => m._id),
-          response.data
+          message
         );
       });
   };

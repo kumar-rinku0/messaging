@@ -12,10 +12,10 @@ const Login = () => {
     const obj = Object.fromEntries(formData.entries());
     console.log("Form Data:", obj);
     api
-      .post("/users/login", obj)
+      .post("/user/login", obj)
       .then((response) => {
         console.log("Login successful:", response.data);
-        localStorage.setItem("token", response.data.user._id);
+        localStorage.setItem("token", response.data.userId);
         location.reload();
       })
       .catch((error) => {

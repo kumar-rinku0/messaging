@@ -49,9 +49,11 @@ export function AppSidebar() {
   const token = localStorage.getItem("token");
   React.useEffect(() => {
     function getChats() {
-      api.get<ChatType[]>(`/chat/private/${token}`).then((response) => {
-        setChats(response.data);
-      });
+      api
+        .get<{ chat: ChatType[] }>(`/chat/private/userId/${token}`)
+        .then((response) => {
+          setChats(response.data.chat);
+        });
     }
     getChats();
   }, []);

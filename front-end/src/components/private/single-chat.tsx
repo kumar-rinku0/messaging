@@ -31,7 +31,7 @@ const LastMessage = ({ chatId }: { chatId: string }) => {
 
   React.useEffect(() => {
     api
-      .get<MessageType | null>(`/msg/last-message/${chatId}`)
+      .get<MessageType | null>(`/msg/last-message/chatId/${chatId}`)
       .then((response) => {
         setLastMessage(response.data?.msg || null);
       });
