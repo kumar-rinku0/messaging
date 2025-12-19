@@ -20,7 +20,7 @@ const handleCreatePrivateChat = async (req: Request, res: Response) => {
     return res.status(201).json({ chat, ok: true });
   }
 
-  return res.status(200).json({ oldChat, ok: true });
+  return res.status(200).json({ chat: oldChat, ok: true });
 };
 
 const handleCreateGroupChat = async (req: Request, res: Response) => {
