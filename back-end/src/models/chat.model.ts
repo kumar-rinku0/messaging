@@ -6,6 +6,15 @@ const chatSchema = new Schema(
       type: String,
       required: true,
     },
+    type: {
+      type: String,
+      required: true,
+      default: "private",
+      enum: {
+        values: ["private", "group"],
+        message: "only private and group chats available.",
+      },
+    },
     members: {
       type: [
         {

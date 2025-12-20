@@ -13,6 +13,7 @@ const handleCreatePrivateChat = async (req: Request, res: Response) => {
   if (!oldChat) {
     const chat = new Chat({
       name: "private-chat",
+      type: "private",
       members: [sender, recipient],
     });
     await chat.save();
@@ -28,6 +29,7 @@ const handleCreateGroupChat = async (req: Request, res: Response) => {
 
   const chat = new Chat({
     name,
+    type: "group",
     members,
   });
   await chat.save();
@@ -52,6 +54,7 @@ const handleGetPrivateChat = async (req: Request, res: Response) => {
   const chat = await Chat.find({
     members: { $all: [userId] },
     name: "private-chat",
+    type: "private",
   }).populate("members");
   if (!chat) {
     return res.status(404).json({ message: "Chat not found", ok: false });
