@@ -82,6 +82,21 @@ io.on("connection", async (socket: Socket) => {
     });
   });
 
+  // user typing status
+  socket.on("typing", (userId) => {
+    const user = onlineUsers.find((u) => u.userId === userId);
+    if (user) {
+      socket.to(user.socketId).emit("user_typing", userId);
+    }
+  });
+
+  socket.on("stop_typing", (userId) => {
+    const user = onlineUsers.find((u) => u.userId === userId);
+    if (user) {
+      socket.to(user.socketId).emit("user_stop_typing", userId);
+    }
+  });
+
   socket.on("disconnect", async () => {
     onlineUsers = onlineUsers.filter((user) => user.socketId !== socket.id);
     const filteredUsers = await getOnlineUsers(onlineUsers);

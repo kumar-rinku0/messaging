@@ -29,6 +29,15 @@ const chatSchema = new Schema(
         message: "Members must be a non-empty array with at least two members",
       },
     },
+    messages: {
+      type: [
+        {
+          type: Schema.Types.ObjectId,
+          ref: "Message",
+          required: true,
+        },
+      ],
+    },
   },
   { timestamps: true }
 );

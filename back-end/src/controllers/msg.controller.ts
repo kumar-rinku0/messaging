@@ -5,12 +5,19 @@ import Chat from "@/models/chat.model";
 const handleCreateMessage = async (req: Request, res: Response) => {
   const { chatId, sender, msg } = req.body;
 
+  const chat = await Chat.findById(chatId);
+  if (!chat) {
+    return res.status(400).json({ message: "chat not found", ok: false });
+  }
   const message = new Message({
     chat: chatId,
     sender,
     msg,
+    seenBy: [sender],
   });
   await message.save();
+  chat.messages.push(message._id);
+  await chat.save();
 
   return res.status(201).json({ message, ok: true });
 };

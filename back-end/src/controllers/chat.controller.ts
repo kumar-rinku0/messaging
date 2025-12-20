@@ -50,12 +50,17 @@ const handleGetChatById = async (req: Request, res: Response) => {
 
 const handleGetPrivateChat = async (req: Request, res: Response) => {
   const { userId } = req.params;
+  const { sort } = req.query;
 
-  const chat = await Chat.find({
+  const query = {
     members: { $all: [userId] },
     name: "private-chat",
     type: "private",
-  }).populate("members");
+  };
+  const chat = await Chat.find(query, { messages: { $slice: -1 } })
+    .populate("members", "username _id")
+    .populate("messages", "msg sender")
+    .sort({ updatedAt: sort === "1" ? 1 : -1 });
   if (!chat) {
     return res.status(404).json({ message: "Chat not found", ok: false });
   }
