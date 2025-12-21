@@ -8,6 +8,7 @@ config();
 
 // middlewares
 import errorMiddleware from "@/middlewares/error.middleware";
+import { isLoggedInCheck } from "./middlewares/auth";
 
 // routers
 import userRouter from "@/routes/user.route";
@@ -38,6 +39,8 @@ mongoose
 // middlewares
 app.use(express.json({ limit: "40kb" }));
 app.use(express.urlencoded({ limit: "40kb", extended: true }));
+
+app.use(isLoggedInCheck);
 
 app.get("/", (req, res) => {
   return res.json({ req: "success", ok: true });
