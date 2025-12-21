@@ -85,10 +85,27 @@ const handleGetGroupChat = async (req: Request, res: Response) => {
   res.status(200).json({ chat, ok: true });
 };
 
+const handleGetAllTypeChat = async (req: Request, res: Response) => {
+  const { userId } = req.params;
+  const { sort } = req.query;
+  const query = {
+    members: { $all: [userId] },
+  };
+  const chat = await Chat.find(query)
+    .populate("members", "username _id")
+    .populate("messages", "msg sender createdAt seenBy")
+    .sort({ updatedAt: sort === "1" ? 1 : -1 });
+  if (!chat) {
+    return res.status(404).json({ message: "Chat not found", ok: false });
+  }
+  res.status(200).json({ chat, ok: true });
+};
+
 export {
   handleCreatePrivateChat,
   handleCreateGroupChat,
   handleGetChatById,
   handleGetPrivateChat,
   handleGetGroupChat,
+  handleGetAllTypeChat,
 };
