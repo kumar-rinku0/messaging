@@ -16,7 +16,7 @@ const handleCreateMessage = async (req: Request, res: Response) => {
     seenBy: [sender],
   });
   await message.save();
-  chat.messages.push(message._id);
+  chat.lastMessage = message._id;
   await chat.save();
 
   return res.status(201).json({ message, ok: true });

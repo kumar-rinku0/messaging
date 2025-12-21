@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import Chat from "@/models/chat.model";
-import Message from "@/models/msg.model";
 
 const handleCreatePrivateChat = async (req: Request, res: Response) => {
   const { sender, recipient } = req.body;
@@ -59,7 +58,6 @@ const handleGetPrivateChat = async (req: Request, res: Response) => {
   };
   const chat = await Chat.find(query, { messages: { $slice: -1 } })
     .populate("members", "username _id")
-    .populate("messages", "msg sender")
     .sort({ updatedAt: sort === "1" ? 1 : -1 });
   if (!chat) {
     return res.status(404).json({ message: "Chat not found", ok: false });
@@ -77,7 +75,6 @@ const handleGetGroupChat = async (req: Request, res: Response) => {
   };
   const chat = await Chat.find(query, { messages: { $slice: -1 } })
     .populate("members", "username _id")
-    .populate("messages", "msg sender")
     .sort({ updatedAt: sort === "1" ? 1 : -1 });
   if (!chat) {
     return res.status(404).json({ message: "Chat not found", ok: false });
@@ -87,14 +84,54 @@ const handleGetGroupChat = async (req: Request, res: Response) => {
 
 const handleGetAllTypeChat = async (req: Request, res: Response) => {
   const { userId } = req.params;
-  const { sort } = req.query;
-  const query = {
-    members: { $all: [userId] },
-  };
-  const chat = await Chat.find(query)
-    .populate("members", "username _id")
-    .populate("messages", "msg sender createdAt seenBy")
-    .sort({ updatedAt: sort === "1" ? 1 : -1 });
+  // const { sort } = req.query;
+  // const query = {
+  //   members: { $all: [userId] },
+  // };
+  const chat = await Chat.aggregate([
+    { $match: { members: userId } },
+    {
+      $lookup: {
+        from: "users",
+        localField: "members",
+        foreignField: "_id",
+        as: "lastMessageDetails",
+      },
+    },
+    {
+      $project: {
+        type: 1,
+        updatedAt: 1,
+        lastMessage: { $arrayElemAt: ["${lastMessageDetails}", 0] },
+        displayName: {
+          $cond: {
+            if: { $eq: ["$type", "group"] },
+            then: "$groupName",
+            else: {
+              $let: {
+                vars: {
+                  otherUser: {
+                    $arrayElemAt: [
+                      {
+                        $filter: {
+                          input: "$memberDetails",
+                          as: "m",
+                          cond: { $ne: ["$$m._id", userId] },
+                        },
+                      },
+                      0,
+                    ],
+                  },
+                },
+                in: "$$otherUser.username",
+              },
+            },
+          },
+        },
+      },
+    },
+    { $sort: { updatedAt: -1 } },
+  ]);
   if (!chat) {
     return res.status(404).json({ message: "Chat not found", ok: false });
   }
