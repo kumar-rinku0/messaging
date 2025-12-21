@@ -91,24 +91,40 @@ const handleGetAllTypeChat = async (req: Request, res: Response) => {
   //   members: { $all: [userId] },
   // };
   const chat = await Chat.aggregate([
+    // 1. Only chats where user is a member
     { $match: { members: userId } },
+
+    // 2. Lookup member user details
     {
       $lookup: {
         from: "users",
         localField: "members",
         foreignField: "_id",
+        as: "memberDetails",
+      },
+    },
+
+    // 3. Lookup last message
+    {
+      $lookup: {
+        from: "messages",
+        localField: "lastMessage",
+        foreignField: "_id",
         as: "lastMessageDetails",
       },
     },
+
+    // 4. Shape the output
     {
       $project: {
         type: 1,
         updatedAt: 1,
-        lastMessage: { $arrayElemAt: ["${lastMessageDetails}", 0] },
+        lastMessage: { $arrayElemAt: ["$lastMessageDetails", 0] },
+
         displayName: {
           $cond: {
             if: { $eq: ["$type", "group"] },
-            then: "$groupName",
+            then: "$name",
             else: {
               $let: {
                 vars: {
@@ -132,8 +148,11 @@ const handleGetAllTypeChat = async (req: Request, res: Response) => {
         },
       },
     },
+
+    // 5. Sort by last activity
     { $sort: { updatedAt: -1 } },
   ]);
+
   if (!chat) {
     return res.status(404).json({ message: "Chat not found", ok: false });
   }
