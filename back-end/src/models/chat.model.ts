@@ -31,7 +31,7 @@ const chatSchema = new Schema(
     },
     admin: {
       type: Schema.Types.ObjectId,
-      ref: "Message",
+      ref: "User",
       required: [true, "admin is required."],
     },
     lastMessage: {
