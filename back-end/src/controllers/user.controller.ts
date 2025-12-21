@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import User from "../models/user.model";
 import { verifyPassword } from "@/utils/hashing";
-import crypto from "crypto";
+import { setUser } from "@/utils/jwt";
 
 const handleUserRegistration = async (req: Request, res: Response) => {
   const { username, email, password } = req.body;
@@ -10,12 +10,23 @@ const handleUserRegistration = async (req: Request, res: Response) => {
     password,
     email,
   });
-
   await newUser.save();
+
+  const auth_token = setUser({
+    _id: newUser._id.toString(),
+    email: newUser.email,
+    username: newUser.username,
+  });
+  res.cookie("auth_token", auth_token, {
+    signed: true,
+    httpOnly: true, // Optional: Makes the cookie inaccessible to client-side JavaScript
+    maxAge: 1000 * 60 * 60 * 24, // Optional: Cookie expiration time (1 day)
+  });
 
   res.status(201).json({
     message: "User registered successfully",
     userId: newUser._id,
+    auth_token,
     ok: true,
   });
 };
@@ -30,10 +41,22 @@ const handleUserLogin = async (req: Request, res: Response) => {
   if (!isRightPassword) {
     return res.status(401).json({ message: "Invalid password", ok: false });
   }
-  const token = crypto.randomBytes(32).toString("hex"); // Generate a token (use a proper library in production)
-  return res
-    .status(200)
-    .json({ message: "Login successful", userId: user._id, token, ok: true });
+  const auth_token = setUser({
+    _id: user._id.toString(),
+    email: user.email,
+    username: user.username,
+  });
+  res.cookie("auth_token", auth_token, {
+    signed: true,
+    httpOnly: true, // Optional: Makes the cookie inaccessible to client-side JavaScript
+    maxAge: 1000 * 60 * 60 * 24, // Optional: Cookie expiration time (1 day)
+  });
+  return res.status(200).json({
+    message: "Login successful",
+    userId: user._id,
+    auth_token,
+    ok: true,
+  });
 };
 
 const handleGetAllUsers = async (req: Request, res: Response) => {

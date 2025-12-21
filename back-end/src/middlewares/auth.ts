@@ -10,7 +10,7 @@ declare global {
 }
 
 const isLoggedInCheck = (req: Request, res: Response, next: NextFunction) => {
-  const cookie = req.cookies?.auth_token;
+  const cookie = req.signedCookies?.auth_token;
   const user = getUser(cookie);
   req.user = user;
   return next();
