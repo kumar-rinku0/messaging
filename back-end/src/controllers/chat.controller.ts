@@ -35,7 +35,7 @@ const handleCreateGroupChat = async (req: Request, res: Response) => {
   });
   await chat.save();
 
-  res.status(201).json({ chat, ok: true });
+  return res.status(201).json({ chat, ok: true });
 };
 
 const handleGetChatById = async (req: Request, res: Response) => {
@@ -46,10 +46,10 @@ const handleGetChatById = async (req: Request, res: Response) => {
     return res.status(404).json({ message: "Chat not found", ok: false });
   }
 
-  res.status(200).json({ chat, ok: true });
+  return res.status(200).json({ chat, ok: true });
 };
 
-const handleGetPrivateChat = async (req: Request, res: Response) => {
+const handleGetPrivateChats = async (req: Request, res: Response) => {
   const { userId } = req.params;
   const { sort } = req.query;
 
@@ -58,112 +58,85 @@ const handleGetPrivateChat = async (req: Request, res: Response) => {
     name: "private-chat",
     type: "private",
   };
-  const chat = await Chat.find(query, { messages: { $slice: -1 } })
+  const chats = await Chat.find(query, { messages: { $slice: -1 } })
     .populate("members", "username _id")
     .sort({ updatedAt: sort === "1" ? 1 : -1 });
-  if (!chat) {
+  if (!chats) {
     return res.status(404).json({ message: "Chat not found", ok: false });
   }
 
-  res.status(200).json({ chat, ok: true });
+  res.status(200).json({ chats, ok: true });
 };
 
-const handleGetGroupChat = async (req: Request, res: Response) => {
+const handleGetGroupChats = async (req: Request, res: Response) => {
   const { userId } = req.params;
   const { sort } = req.query;
   const query = {
     members: { $all: [userId] },
     type: "group",
   };
-  const chat = await Chat.find(query, { messages: { $slice: -1 } })
+  const chats = await Chat.find(query, { messages: { $slice: -1 } })
     .populate("members", "username _id")
     .sort({ updatedAt: sort === "1" ? 1 : -1 });
-  if (!chat) {
+  if (!chats) {
     return res.status(404).json({ message: "Chat not found", ok: false });
   }
-  res.status(200).json({ chat, ok: true });
+  return res.status(200).json({ chats, ok: true });
 };
 
-const handleGetAllTypeChat = async (req: Request, res: Response) => {
+const handleGetAllTypeChats = async (req: Request, res: Response) => {
   const { userId } = req.params;
   // const { sort } = req.query;
   // const query = {
   //   members: { $all: [userId] },
   // };
-  const chat = await Chat.aggregate([
-    // 1. Only chats where user is a member
-    { $match: { members: userId } },
-
-    // 2. Lookup member user details
-    {
-      $lookup: {
-        from: "users",
-        localField: "members",
-        foreignField: "_id",
-        as: "memberDetails",
+  const chats = await Chat.find({ members: userId })
+    .populate({
+      path: "members",
+      select: "username avatar", // adjust fields as needed
+    })
+    .populate({
+      path: "lastMessage",
+      populate: {
+        path: "sender",
+        select: "username avatar",
       },
-    },
+    })
+    .sort({ updatedAt: -1 })
+    .lean();
 
-    // 3. Lookup last message
-    {
-      $lookup: {
-        from: "messages",
-        localField: "lastMessage",
-        foreignField: "_id",
-        as: "lastMessageDetails",
-      },
-    },
-
-    // 4. Shape the output
-    {
-      $project: {
-        type: 1,
-        updatedAt: 1,
-        lastMessage: { $arrayElemAt: ["$lastMessageDetails", 0] },
-
-        displayName: {
-          $cond: {
-            if: { $eq: ["$type", "group"] },
-            then: "$name",
-            else: {
-              $let: {
-                vars: {
-                  otherUser: {
-                    $arrayElemAt: [
-                      {
-                        $filter: {
-                          input: "$memberDetails",
-                          as: "m",
-                          cond: { $ne: ["$$m._id", userId] },
-                        },
-                      },
-                      0,
-                    ],
-                  },
-                },
-                in: "$$otherUser.username",
-              },
-            },
-          },
-        },
-      },
-    },
-
-    // 5. Sort by last activity
-    { $sort: { updatedAt: -1 } },
-  ]);
-
-  if (!chat) {
+  if (!chats) {
     return res.status(404).json({ message: "Chat not found", ok: false });
   }
-  res.status(200).json({ chat, ok: true });
+
+  const formattedChats = chats.map((chat) => {
+    let displayName;
+
+    if (chat.type === "group") {
+      displayName = chat.name;
+    } else {
+      const otherUser = chat.members.find(
+        (m) => m._id.toString() !== userId.toString()
+      ) as any;
+      displayName = otherUser?.username;
+    }
+
+    return {
+      _id: chat._id,
+      type: chat.type,
+      updatedAt: chat.updatedAt,
+      displayName,
+      lastMessage: chat.lastMessage,
+    };
+  });
+  return res.status(200).json({ chats: formattedChats, ok: true });
 };
 
 export {
   handleCreatePrivateChat,
   handleCreateGroupChat,
   handleGetChatById,
-  handleGetPrivateChat,
-  handleGetGroupChat,
-  handleGetAllTypeChat,
+  handleGetPrivateChats,
+  handleGetGroupChats,
+  handleGetAllTypeChats,
 };
