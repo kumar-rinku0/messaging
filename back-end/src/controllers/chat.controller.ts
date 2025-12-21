@@ -13,6 +13,7 @@ const handleCreatePrivateChat = async (req: Request, res: Response) => {
     const chat = new Chat({
       name: "private-chat",
       type: "private",
+      admin: sender,
       members: [sender, recipient],
     });
     await chat.save();
@@ -29,6 +30,7 @@ const handleCreateGroupChat = async (req: Request, res: Response) => {
   const chat = new Chat({
     name,
     type: "group",
+    admin: members[0],
     members,
   });
   await chat.save();
