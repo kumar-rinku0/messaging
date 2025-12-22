@@ -78,7 +78,7 @@ const getOnlineUsers = async (
 ) => {
   const users = await User.find({
     _id: { $in: onlineUsers.map((user) => user.userId) },
-  }).select("-password -email -__v");
+  }).select("_id username");
   return users;
 };
 
