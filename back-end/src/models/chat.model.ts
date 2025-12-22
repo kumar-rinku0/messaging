@@ -29,6 +29,11 @@ const chatSchema = new Schema(
         message: "Members must be a non-empty array with at least two members",
       },
     },
+    avatar: {
+      type: String,
+      default:
+        "https://ufoodin.com/core/modules/564f78c045/bp-core/images/group-avatar-buddyboss.png",
+    },
     admin: {
       type: Schema.Types.ObjectId,
       ref: "User",

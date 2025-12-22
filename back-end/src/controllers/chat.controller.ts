@@ -8,7 +8,7 @@ const handleCreatePrivateChat = async (req: Request, res: Response) => {
   const oldChat = await Chat.findOne({
     members: { $all: [sender, recipient] },
     name: "private-chat",
-  }).populate("members", "username _id");
+  }).populate("members", "username avatar");
 
   if (!oldChat) {
     const chat = new Chat({
@@ -18,7 +18,7 @@ const handleCreatePrivateChat = async (req: Request, res: Response) => {
       members: [sender, recipient],
     });
     await chat.save();
-    await chat.populate("members", "username _id");
+    await chat.populate("members", "username avatar");
     return res
       .status(201)
       .json({ chat: getFormatedChat(chat, sender), ok: true });
