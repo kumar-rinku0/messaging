@@ -11,12 +11,12 @@ const handleUserRegistration = async (req: Request, res: Response) => {
     email,
   });
   await newUser.save();
-
-  const auth_token = setUser({
+  const user = {
     _id: newUser._id.toString(),
     email: newUser.email,
     username: newUser.username,
-  });
+  };
+  const auth_token = setUser(user);
   res.cookie("auth_token", auth_token, {
     signed: true,
     httpOnly: true, // Optional: Makes the cookie inaccessible to client-side JavaScript
@@ -26,6 +26,7 @@ const handleUserRegistration = async (req: Request, res: Response) => {
   res.status(201).json({
     message: "User registered successfully",
     userId: newUser._id,
+    user: user,
     auth_token,
     ok: true,
   });
@@ -41,11 +42,12 @@ const handleUserLogin = async (req: Request, res: Response) => {
   if (!isRightPassword) {
     return res.status(401).json({ message: "Invalid password", ok: false });
   }
-  const auth_token = setUser({
+  const authUser = {
     _id: user._id.toString(),
     email: user.email,
     username: user.username,
-  });
+  };
+  const auth_token = setUser(authUser);
   res.cookie("auth_token", auth_token, {
     signed: true,
     httpOnly: true, // Optional: Makes the cookie inaccessible to client-side JavaScript
@@ -54,6 +56,7 @@ const handleUserLogin = async (req: Request, res: Response) => {
   return res.status(200).json({
     message: "Login successful",
     userId: user._id,
+    user: authUser,
     auth_token,
     ok: true,
   });
