@@ -15,7 +15,7 @@ import { isLoggedInCheck } from "./middlewares/auth";
 import userRouter from "@/routes/user.route";
 import chatRouter from "@/routes/chat.route";
 import msgRouter from "@/routes/msg.route";
-import { getOnlineUsers } from "@/controllers/user.controller";
+import { getMembersFromChat, getOnlineUsers } from "./utils/type-fix";
 
 const port = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/myapp";
@@ -74,18 +74,25 @@ io.on("connection", async (socket: Socket) => {
   socket.emit("online-users", filteredUsers);
   socket.broadcast.emit("online-users", filteredUsers);
 
-  socket.on("msg", (recipients: string[], msg) => {
-    console.log("recipients:", recipients);
-    console.log("message received:", msg);
-    recipients.map((recipientId) => {
-      const recipientSocket = onlineUsers.find(
-        (user) => user.userId === recipientId
-      );
-      if (recipientSocket) {
-        socket.to(recipientSocket.socketId).emit("msg", msg);
-      }
-    });
-  });
+  socket.on(
+    "msg",
+    async (
+      { chatId, userId }: { chatId: string; userId: string },
+      msg: any
+    ) => {
+      console.log("chatId:", chatId);
+      console.log("message received:", msg);
+      const who = await getMembersFromChat(chatId, userId);
+      who.map((recipientId) => {
+        const recipientSocket = onlineUsers.find(
+          (user) => user.userId === recipientId.toString()
+        );
+        if (recipientSocket) {
+          socket.to(recipientSocket.socketId).emit("msg", msg);
+        }
+      });
+    }
+  );
 
   // user typing status
   socket.on("typing", (userId) => {

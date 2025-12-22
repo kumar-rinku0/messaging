@@ -102,13 +102,7 @@ const ChatMessages = () => {
         setMessages((prevMessages) => [...prevMessages, message]);
         setMsg(""); // Clear the input field after sending the message
         if (!chat) return;
-        socket.emit(
-          "msg",
-          chat.members
-            .filter((member) => member._id !== token)
-            .map((m) => m._id),
-          message
-        );
+        socket.emit("msg", { chatId: chat._id, userId: token }, message);
       });
   };
 
