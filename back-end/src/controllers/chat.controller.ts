@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import Chat from "@/models/chat.model";
+import { getFormatedChat } from "@/utils/type-fix";
 
 const handleCreatePrivateChat = async (req: Request, res: Response) => {
   const { sender, recipient } = req.body;
@@ -18,10 +19,14 @@ const handleCreatePrivateChat = async (req: Request, res: Response) => {
     });
     await chat.save();
     await chat.populate("members", "username _id");
-    return res.status(201).json({ chat, ok: true });
+    return res
+      .status(201)
+      .json({ chat: getFormatedChat(chat, sender), ok: true });
   }
 
-  return res.status(200).json({ chat: oldChat, ok: true });
+  return res
+    .status(200)
+    .json({ chat: getFormatedChat(oldChat, sender), ok: true });
 };
 
 const handleCreateGroupChat = async (req: Request, res: Response) => {
@@ -35,7 +40,9 @@ const handleCreateGroupChat = async (req: Request, res: Response) => {
   });
   await chat.save();
 
-  return res.status(201).json({ chat, ok: true });
+  return res
+    .status(201)
+    .json({ chat: getFormatedChat(chat, members[0]), ok: true });
 };
 
 const handleGetChatById = async (req: Request, res: Response) => {
@@ -46,7 +53,9 @@ const handleGetChatById = async (req: Request, res: Response) => {
     return res.status(404).json({ message: "Chat not found", ok: false });
   }
 
-  return res.status(200).json({ chat, ok: true });
+  return res
+    .status(200)
+    .json({ chat, ok: true, message: "chat is not formated to display name." });
 };
 
 const handleGetPrivateChats = async (req: Request, res: Response) => {
@@ -110,24 +119,7 @@ const handleGetAllTypeChats = async (req: Request, res: Response) => {
   }
 
   const formattedChats = chats.map((chat) => {
-    let displayName;
-
-    if (chat.type === "group") {
-      displayName = chat.name;
-    } else {
-      const otherUser = chat.members.find(
-        (m) => m._id.toString() !== userId.toString()
-      ) as any;
-      displayName = otherUser?.username;
-    }
-
-    return {
-      _id: chat._id,
-      type: chat.type,
-      updatedAt: chat.updatedAt,
-      displayName,
-      lastMessage: chat.lastMessage,
-    };
+    return getFormatedChat(chat, userId);
   });
   return res.status(200).json({ chats: formattedChats, ok: true });
 };

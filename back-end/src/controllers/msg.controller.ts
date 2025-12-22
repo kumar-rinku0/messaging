@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import Message from "@/models/msg.model";
 import Chat from "@/models/chat.model";
+import { getFormatedChat } from "@/utils/type-fix";
 
 const handleCreateMessage = async (req: Request, res: Response) => {
   const { chatId, sender, msg } = req.body;
@@ -24,13 +25,11 @@ const handleCreateMessage = async (req: Request, res: Response) => {
 
 const handleGetMessagesByChatId = async (req: Request, res: Response) => {
   const { chatId } = req.params;
-  const chat = await Chat.findById(chatId)
-    .select("_id members")
-    .populate("members", "username _id");
+  const chat = await Chat.findById(chatId).populate("members", "username _id");
   if (!chat) {
     return res.status(404).json({ message: "Chat not found", ok: false });
   }
-  const { page = 1, limit = 20 } = req.query;
+  const { page = 1, limit = 20, userId } = req.query;
 
   // Pagination logic (optional)
   const skip = (Number(page) - 1) * Number(limit);
@@ -42,6 +41,7 @@ const handleGetMessagesByChatId = async (req: Request, res: Response) => {
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(Number(limit));
+  const formatedChat = getFormatedChat(chat, userId);
   return res.status(200).json({
     messages: messages.reverse(),
     totalMessages: totalMessages,
@@ -49,16 +49,14 @@ const handleGetMessagesByChatId = async (req: Request, res: Response) => {
     totalPages: Math.ceil(totalMessages / Number(limit)),
     sort: -1,
     limit,
-    chat,
+    chat: userId ? formatedChat : chat,
     ok: true,
   });
 };
 
 const handleGetAllMessagesByChatId = async (req: Request, res: Response) => {
   const { chatId } = req.params;
-  const chat = await Chat.findById(chatId)
-    .select("_id members")
-    .populate("members", "username _id");
+  const chat = await Chat.findById(chatId).populate("members", "username _id");
   if (!chat) {
     return res.status(404).json({ message: "Chat not found", ok: false });
   }

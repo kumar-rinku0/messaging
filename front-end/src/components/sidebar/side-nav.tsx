@@ -36,9 +36,9 @@ export default function SideNav() {
     } else {
       const getChats = () => {
         api
-          .get<{ chat: ChatType[] }>(`/chat/private/userId/${token}`)
+          .get<{ chats: ChatType[] }>(`/chat/all/userId/${token}`)
           .then((response) => {
-            setChats(response.data.chat);
+            setChats(response.data.chats);
           });
       };
       getChats();
@@ -83,21 +83,20 @@ export default function SideNav() {
           <div className="mt-4 relative pb-2">
             <div className={`flex flex-col transition-all duration-200`}>
               {chats.map((chat) => {
-                const member = chat.members.find(
-                  (member) => member._id !== token
+                const isOnline = onlineUsers.some(
+                  (user) => user.username === chat.displayName
                 );
-                const username = member ? member.username : "Unknown";
                 if (isMobile) {
                   return (
                     <Fragment key={chat._id}>
                       <div className="flex flex-col my-1">
                         <MobileSideNavItem
-                          label={username}
+                          label={chat.displayName}
                           path={`/${chat._id}`}
                           active={isNavItemActive(pathname, `/${chat._id}`)}
-                          isOnline={onlineUsers.some(
-                            (user) => user._id === member?._id
-                          )}
+                          isOnline={
+                            chat.type === "private" ? isOnline : undefined
+                          }
                         />
                       </div>
                     </Fragment>
@@ -107,12 +106,12 @@ export default function SideNav() {
                   <Fragment key={chat._id}>
                     <div className="flex flex-col my-1">
                       <SideNavItem
-                        label={username}
+                        label={chat.displayName}
                         path={`/${chat._id}`}
                         active={isNavItemActive(pathname, `/${chat._id}`)}
-                        isOnline={onlineUsers.some(
-                          (user) => user._id === member?._id
-                        )}
+                        isOnline={
+                          chat.type === "private" ? isOnline : undefined
+                        }
                       />
                     </div>
                   </Fragment>

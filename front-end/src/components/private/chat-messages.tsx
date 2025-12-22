@@ -1,11 +1,11 @@
 import api from "@/services/api";
-import type { MessageType } from "@/types/api-types";
+import type { ChatType, MessageType } from "@/types/api-types";
 import React, { useEffect, useRef } from "react";
 import { motion } from "motion/react";
 import { easeOut } from "motion"; // Add this import at the top with other imports
 import { ArrowLeft, SendHorizonal } from "lucide-react";
 import socket from "@/services/socket";
-import { useParams } from "react-router";
+import { useParams, useNavigate } from "react-router";
 import { toast } from "sonner";
 import { ScrollArea } from "../ui/scroll-area";
 import { Button } from "../ui/button";
@@ -16,10 +16,7 @@ type ResponseType = {
   page: number;
   totalPages: number;
   limit: number;
-  chat: {
-    _id: string;
-    members: { _id: string; username: string }[];
-  };
+  chat: ChatType;
 };
 
 const transitionDebug = {
@@ -28,6 +25,7 @@ const transitionDebug = {
 };
 
 const ChatMessages = () => {
+  const router = useNavigate();
   const { chatId } = useParams<{ chatId: string }>();
   const [messages, setMessages] = React.useState<MessageType[]>([]);
   const [count, setCount] = React.useState<{
@@ -36,15 +34,12 @@ const ChatMessages = () => {
     totalPages: number;
     limit: number;
   }>({ totalMessages: 0, page: 1, totalPages: 1, limit: 0 });
-  const [chat, setChat] = React.useState<{
-    _id: string;
-    members: { _id: string; username: string }[];
-  } | null>(null);
+  const [chat, setChat] = React.useState<ChatType | null>(null);
   const [msg, setMsg] = React.useState<string>("");
   const token = localStorage.getItem("token");
   function fetchChatMessages(page: number) {
     api
-      .get<ResponseType>(`/msg/chatId/${chatId}?page=${page}`)
+      .get<ResponseType>(`/msg/chatId/${chatId}?page=${page}&userId=${token}`)
       .then((response) => {
         // Handle the response and update state
         const {
@@ -135,13 +130,11 @@ const ChatMessages = () => {
           <ArrowLeft
             className="mr-4 inline h-5 w-5 cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-50"
             onClick={() => {
-              history.back();
+              router("/");
             }}
           />
         </span>
-        <span className="font-semibold">
-          {chat?.members.find((member) => member._id !== token)?.username}
-        </span>
+        <span className="font-semibold">{chat?.displayName}</span>
       </div>
       {/* <div className="flex h-[calc(100vh-40px)] flex-col items-end justify-end pb-4 px-1"> */}
       <div className="flex h-[calc(100vh-40px)] flex-col pb-4 px-1">
