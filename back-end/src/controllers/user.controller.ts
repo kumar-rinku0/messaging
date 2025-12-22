@@ -73,19 +73,9 @@ const handleGetSearchedUser = async (req: Request, res: Response) => {
   return res.status(200).json({ users: users, ok: true });
 };
 
-const getOnlineUsers = async (
-  onlineUsers: { socketId: string; userId: string }[]
-) => {
-  const users = await User.find({
-    _id: { $in: onlineUsers.map((user) => user.userId) },
-  }).select("_id username");
-  return users;
-};
-
 export {
   handleUserRegistration,
   handleUserLogin,
   handleGetAllUsers,
   handleGetSearchedUser,
-  getOnlineUsers,
 };
