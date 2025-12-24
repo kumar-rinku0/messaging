@@ -14,6 +14,7 @@ const handleUserRegistration = async (req: Request, res: Response) => {
   const user = {
     _id: newUser._id.toString(),
     email: newUser.email,
+    avatar: newUser.avatar,
     username: newUser.username,
   };
   const auth_token = setUser(user);
@@ -45,6 +46,7 @@ const handleUserLogin = async (req: Request, res: Response) => {
   const authUser = {
     _id: user._id.toString(),
     email: user.email,
+    avatar: user.avatar,
     username: user.username,
   };
   const auth_token = setUser(authUser);

@@ -8,13 +8,15 @@ type UserType = {
   _id: string;
   username: string;
   email: string;
+  avatar: string;
 };
 
-const setUser = ({ _id, username, email }: UserType) => {
+const setUser = ({ _id, username, avatar, email }: UserType) => {
   return sign(
     {
       _id,
       username,
+      avatar,
       email,
     },
     KEY,
