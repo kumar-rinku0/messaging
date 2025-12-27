@@ -13,7 +13,8 @@ import { LogOut, MessageCircleMore } from "lucide-react";
 
 export default function SideNav() {
   const [chats, setChats] = React.useState<ChatType[]>([]);
-  const token = localStorage.getItem("token");
+  const auth_user = localStorage.getItem("auth_user") || "";
+  const user = JSON.parse(auth_user) as UserType;
 
   const pathname = useLocation().pathname;
   function isNavItemActive(pathname: string, path: string) {
@@ -31,24 +32,24 @@ export default function SideNav() {
   // }
 
   useEffect(() => {
-    if (!token) {
+    if (!user) {
       location.assign("/");
     } else {
       const getChats = () => {
         api
-          .get<{ chats: ChatType[] }>(`/chat/all/userId/${token}`)
+          .get<{ chats: ChatType[] }>(`/chat/all/userId/${user._id}`)
           .then((response) => {
             setChats(response.data.chats);
           });
       };
       getChats();
     }
-  }, [token]);
+  }, [user]);
 
   useEffect(() => {
     const getOnlineUsers = (users: UserType[]) => {
       console.log("Online users from socket:", users);
-      const filtered = users.filter((user) => user._id !== token);
+      const filtered = users.filter((user) => user._id !== user._id);
       setOnlineUsers(filtered);
     };
 
@@ -65,7 +66,7 @@ export default function SideNav() {
     location.assign("/");
   };
 
-  if (!token) {
+  if (!user) {
     return null;
   }
   const isMobile = useIsMobile();

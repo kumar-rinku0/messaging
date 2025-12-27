@@ -7,15 +7,14 @@ type UsersType = UserType[];
 
 const OnlineUsers = () => {
   const [onlineUsers, setOnlineUsers] = React.useState<UsersType>([]);
-  // const [chats, setChats] = React.useState<ChatType[]>([]);
-  // const [selectedChat, setSelectedChat] = React.useState<ChatType | null>(null);
-  const token = localStorage.getItem("token");
-  console.log(token);
+  const auth_user = localStorage.getItem("auth_user") || "";
+  const user = JSON.parse(auth_user) as UserType;
+  console.log(user);
 
   useEffect(() => {
     const getOnlineUsers = (users: UsersType) => {
       console.log("Online users from socket:", users);
-      const filtered = users.filter((user) => user._id !== token);
+      const filtered = users.filter((user) => user._id !== user._id);
       setOnlineUsers(filtered);
     };
 
@@ -24,7 +23,7 @@ const OnlineUsers = () => {
     return () => {
       socket.off("online-users", getOnlineUsers);
     };
-  }, [token]);
+  }, [user]);
 
   // useEffect(() => {
   //   // api.get<ResponseType>("/users/all").then((response) => {
@@ -43,7 +42,7 @@ const OnlineUsers = () => {
   const handleUserClick = (user: UserType) => {
     api
       .post("/chat/private", {
-        sender: token,
+        sender: user._id,
         recipient: user._id,
       })
       .then((response) => {

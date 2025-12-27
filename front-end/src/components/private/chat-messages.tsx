@@ -1,5 +1,5 @@
 import api from "@/services/api";
-import type { ChatType, MessageType } from "@/types/api-types";
+import type { ChatType, MessageType, UserType } from "@/types/api-types";
 import React, { useEffect, useRef } from "react";
 import { motion } from "motion/react";
 import { easeOut } from "motion"; // Add this import at the top with other imports
@@ -36,10 +36,13 @@ const ChatMessages = () => {
   }>({ totalMessages: 0, page: 1, totalPages: 1, limit: 0 });
   const [chat, setChat] = React.useState<ChatType | null>(null);
   const [msg, setMsg] = React.useState<string>("");
-  const token = localStorage.getItem("token");
+  const auth_user = localStorage.getItem("auth_user") || "";
+  const user = JSON.parse(auth_user) as UserType;
   function fetchChatMessages(page: number) {
     api
-      .get<ResponseType>(`/msg/chatId/${chatId}?page=${page}&userId=${token}`)
+      .get<ResponseType>(
+        `/msg/chatId/${chatId}?page=${page}&userId=${user._id}`
+      )
       .then((response) => {
         // Handle the response and update state
         const {
@@ -90,19 +93,19 @@ const ChatMessages = () => {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     // Send the message to the API
-    if (!token || msg.trim() === "") {
+    if (!user || msg.trim() === "") {
       console.error("No token found in localStorage or empty message");
       return;
     }
     api
-      .post(`/msg/create`, { msg: msg, chatId: chatId, sender: token })
+      .post(`/msg/create`, { msg: msg, chatId: chatId, sender: user._id })
       .then((response) => {
         // Handle the response if needed
         const { message } = response.data;
         setMessages((prevMessages) => [...prevMessages, message]);
         setMsg(""); // Clear the input field after sending the message
         if (!chat) return;
-        socket.emit("msg", { chatId: chat._id, userId: token }, message);
+        socket.emit("msg", { chatId: chat._id, userId: user._id }, message);
       });
   };
 
@@ -153,7 +156,7 @@ const ChatMessages = () => {
                 key={message._id}
                 className={`max-w-[80%] px-4 py-2 rounded-xl text-sm shadow
           ${
-            message.sender === token
+            message.sender === user._id
               ? "self-end bg-green-500 text-white"
               : "self-start bg-gray-200 text-gray-900 dark:bg-gray-800 dark:text-white"
           }`}

@@ -2,7 +2,6 @@ import axios from "axios";
 
 const api = axios.create({
   baseURL: "/api",
-  timeout: 10000,
   withCredentials: true, // send cookies when cross-domain requests
 });
 
@@ -10,7 +9,7 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     // Add authorization token if available
-    const token = localStorage.getItem("token"); // or use a state manager like Redux
+    const token = localStorage.getItem("auth_token"); // or use a state manager like Redux
     if (token) {
       config.headers["Authorization"] = `Bearer ${token}`;
     }
