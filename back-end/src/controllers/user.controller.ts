@@ -12,12 +12,7 @@ const handleUserRegistration = async (req: Request, res: Response) => {
   });
   await newUser.save();
   if (client) {
-    await createSession(
-      client,
-      newUser._id.toString(),
-      req.ip,
-      req.headers["user-agent"]
-    );
+    await createSession(req, newUser._id.toString());
   }
   const user = {
     _id: newUser._id.toString(),
@@ -46,12 +41,7 @@ const handleUserLogin = async (req: Request, res: Response) => {
     return res.status(401).json({ message: "Invalid password", ok: false });
   }
   if (client) {
-    await createSession(
-      client,
-      user._id.toString(),
-      req.ip,
-      req.headers["user-agent"]
-    );
+    await createSession(req, user._id.toString());
   }
   const authUser = {
     _id: user._id.toString(),
@@ -105,23 +95,18 @@ export {
   handleUserLogout,
 };
 
-const createSession = async (
-  client: {
-    id: string;
-    os?: string;
-    token?: string;
-  },
-  userId: string,
-  ip: string | undefined,
-  userAgent: string | undefined
-) => {
-  console.log(client);
+const createSession = async (req: Request, userId: string) => {
+  const { client } = req.body;
+  const ip =
+    (req.headers["x-forwarded-for"] as string) ||
+    (req.socket.remoteAddress as string) ||
+    "";
   const deviceInfo = {
     deviceId: client.id,
     userId: userId,
     deviceName: client.os || "Unknown",
     ip: ip,
-    userAgent: userAgent,
+    userAgent: req.headers["user-agent"],
     token: client.token,
     lastUsed: Date.now(),
   };
