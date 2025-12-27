@@ -6,6 +6,7 @@ import socket from "@/services/socket";
 import { Button } from "../ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { LogOut, MessageCircleMore } from "lucide-react";
+import { toast } from "sonner";
 // import {
 //   requestNotificationPermission,
 //   showNotification,
@@ -13,8 +14,8 @@ import { LogOut, MessageCircleMore } from "lucide-react";
 
 export default function SideNav() {
   const [chats, setChats] = React.useState<ChatType[]>([]);
-  const auth_user = localStorage.getItem("auth_user") || "";
-  const user = JSON.parse(auth_user) as UserType;
+  const auth_user_token = localStorage.getItem("auth_user") || "";
+  const auth_user = JSON.parse(auth_user_token) as UserType;
 
   const pathname = useLocation().pathname;
   function isNavItemActive(pathname: string, path: string) {
@@ -32,19 +33,19 @@ export default function SideNav() {
   // }
 
   useEffect(() => {
-    if (!user) {
+    if (!auth_user) {
       location.assign("/");
     } else {
       const getChats = () => {
         api
-          .get<{ chats: ChatType[] }>(`/chat/all/userId/${user._id}`)
+          .get<{ chats: ChatType[] }>(`/chat/all/userId/${auth_user._id}`)
           .then((response) => {
             setChats(response.data.chats);
           });
       };
       getChats();
     }
-  }, [user]);
+  }, []);
 
   useEffect(() => {
     const getOnlineUsers = (users: UserType[]) => {
@@ -60,13 +61,23 @@ export default function SideNav() {
     };
   }, []);
 
-  const handleLogout = () => {
-    socket.disconnect();
-    localStorage.removeItem("token");
-    location.assign("/");
+  const handleLogout = async () => {
+    api
+      .delete("/user/logout")
+      .then((res) => {
+        socket.disconnect();
+        localStorage.removeItem("auth_token");
+        localStorage.removeItem("auth_user");
+        localStorage.removeItem("session_id");
+        console.log(res.data.message);
+        location.assign("/");
+      })
+      .catch((err) => {
+        toast.error(err.response.data.message || err.message);
+      });
   };
 
-  if (!user) {
+  if (!auth_user) {
     return null;
   }
   const isMobile = useIsMobile();

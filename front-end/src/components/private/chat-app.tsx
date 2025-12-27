@@ -16,8 +16,8 @@ type ResponseType = {
 };
 
 const ChatApp = () => {
-  const auth_user = localStorage.getItem("auth_user") || "";
-  const user = JSON.parse(auth_user) as UserType;
+  const auth_user_token = localStorage.getItem("auth_user") || "";
+  const auth_user = JSON.parse(auth_user_token) as UserType;
   useEffect(() => {
     function onChatMessage(newMsg: MessageType) {
       toast.message(`new message`, {
@@ -38,7 +38,7 @@ const ChatApp = () => {
     };
   }, []);
 
-  if (!user) {
+  if (!auth_user) {
     return <div>Please log in to access the chat application.</div>;
   }
   const [searchContent, setSearchContent] = useState<ResponseType["users"]>([]);
@@ -48,10 +48,12 @@ const ChatApp = () => {
     const formData = new FormData(e.currentTarget);
     const searchTerm = formData.get("search");
     console.log("Searching for:", searchTerm);
-    api.get(`/user/search?q=${searchTerm}`).then((response) => {
-      console.log("Search results:", response.data);
-      setSearchContent(response.data.users);
-    });
+    api
+      .get(`/user/search?q=${searchTerm}&user=${auth_user._id}`)
+      .then((response) => {
+        console.log("Search results:", response.data);
+        setSearchContent(response.data.users);
+      });
   };
 
   return (
@@ -86,7 +88,7 @@ const ChatApp = () => {
                     onClick={() => {
                       api
                         .post("/chat/private", {
-                          sender: user._id,
+                          sender: auth_user._id,
                           recipient: user._id,
                         })
                         .then((response) => {

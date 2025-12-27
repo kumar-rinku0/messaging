@@ -11,15 +11,15 @@ const SingleChat = ({
   online: boolean;
   onClick: (chat: ChatType) => void;
 }) => {
-  const auth_user = localStorage.getItem("auth_user") || "";
-  const user = JSON.parse(auth_user) as UserType;
+  const auth_user_token = localStorage.getItem("auth_user") || "";
+  const auth_user = JSON.parse(auth_user_token) as UserType;
   return (
     <div
       key={chat._id}
       className={`p-2 ${online ? "bg-green-100" : "bg-blue-100"}`}
       onClick={() => onClick(chat)}
     >
-      {chat.members.find((member) => member._id !== user._id)?.username}
+      {chat.members.find((member) => member._id !== auth_user._id)?.username}
       <div>
         <LastMessage chatId={chat._id} />
       </div>

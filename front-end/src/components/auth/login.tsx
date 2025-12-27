@@ -3,6 +3,7 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import React from "react";
+import { getOS, setSessionID } from "@/utils/session";
 
 const Login = () => {
   const [error, setError] = React.useState<string | null>(null);
@@ -11,8 +12,15 @@ const Login = () => {
     const formData = new FormData(event.currentTarget);
     const obj = Object.fromEntries(formData.entries());
     console.log("Form Data:", obj);
+    const newObj = {
+      ...obj,
+      client: {
+        os: getOS(),
+        id: setSessionID(),
+      },
+    };
     api
-      .post("/user/login", obj)
+      .post("/user/login", newObj)
       .then((response) => {
         console.log("Login successful:", response.data);
         const auth_user = JSON.stringify(response.data.user);
