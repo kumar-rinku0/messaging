@@ -18,6 +18,27 @@ const userSchema = new Schema({
     unique: [true, "email must be unique."],
   },
   password: { type: String, required: [true, "password is required."] },
+  devices: {
+    type: [
+      {
+        deviceName: {
+          type: String,
+          required: true,
+        },
+        ip: {
+          type: String,
+          required: true,
+        },
+        userAgent: {
+          type: String,
+          required: true,
+        },
+        token: String,
+        lastUsed: Date,
+      },
+    ],
+    default: [],
+  },
 });
 
 userSchema.pre("save", async function (next) {

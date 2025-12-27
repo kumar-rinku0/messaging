@@ -15,7 +15,9 @@ const Login = () => {
       .post("/user/login", obj)
       .then((response) => {
         console.log("Login successful:", response.data);
-        localStorage.setItem("token", response.data.userId);
+        const auth_user = JSON.stringify(response.data.user);
+        localStorage.setItem("auth_user", auth_user);
+        localStorage.setItem("auth_token", response.data.auth_token);
         location.reload();
       })
       .catch((error) => {

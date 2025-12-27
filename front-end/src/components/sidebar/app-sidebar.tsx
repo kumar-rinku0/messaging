@@ -10,7 +10,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import type { ChatType } from "@/types/api-types";
+import type { ChatType, UserType } from "@/types/api-types";
 import { Link } from "react-router";
 import React from "react";
 import api from "@/services/api";
@@ -46,11 +46,12 @@ import api from "@/services/api";
 
 export function AppSidebar() {
   const [chats, setChats] = React.useState<ChatType[]>([]);
-  const token = localStorage.getItem("token");
+  const auth_user = localStorage.getItem("auth_user") || "";
+  const user = JSON.parse(auth_user) as UserType;
   React.useEffect(() => {
     function getChats() {
       api
-        .get<{ chat: ChatType[] }>(`/chat/private/userId/${token}`)
+        .get<{ chat: ChatType[] }>(`/chat/private/userId/${user._id}`)
         .then((response) => {
           setChats(response.data.chat);
         });
@@ -70,7 +71,7 @@ export function AppSidebar() {
                     <Link to={`/${chat._id}`}>
                       <span>
                         {
-                          chat.members.find((member) => member._id !== token)
+                          chat.members.find((member) => member._id !== user._id)
                             ?.username
                         }
                       </span>

@@ -3,7 +3,7 @@ import { Search } from "lucide-react";
 import { Button } from "../ui/button";
 import api from "@/services/api";
 import { useEffect, useState } from "react";
-import type { MessageType } from "@/types/api-types";
+import type { MessageType, UserType } from "@/types/api-types";
 import { toast } from "sonner";
 import socket from "@/services/socket";
 
@@ -16,7 +16,8 @@ type ResponseType = {
 };
 
 const ChatApp = () => {
-  const token = localStorage.getItem("token");
+  const auth_user = localStorage.getItem("auth_user") || "";
+  const user = JSON.parse(auth_user) as UserType;
   useEffect(() => {
     function onChatMessage(newMsg: MessageType) {
       toast.message(`new message`, {
@@ -37,7 +38,7 @@ const ChatApp = () => {
     };
   }, []);
 
-  if (!token) {
+  if (!user) {
     return <div>Please log in to access the chat application.</div>;
   }
   const [searchContent, setSearchContent] = useState<ResponseType["users"]>([]);
@@ -85,7 +86,7 @@ const ChatApp = () => {
                     onClick={() => {
                       api
                         .post("/chat/private", {
-                          sender: token,
+                          sender: user._id,
                           recipient: user._id,
                         })
                         .then((response) => {

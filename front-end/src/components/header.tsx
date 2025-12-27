@@ -4,10 +4,12 @@ import { Outlet } from "react-router";
 import SideNav from "./sidebar/side-nav";
 import socket from "@/services/socket";
 import { Toaster } from "./ui/sonner";
+import type { UserType } from "@/types/api-types";
 
 const Header = () => {
-  const token = localStorage.getItem("token");
-  socket.auth = { userId: token };
+  const auth_user = localStorage.getItem("auth_user") || "";
+  const user = JSON.parse(auth_user) as UserType;
+  socket.auth = { userId: user._id };
   socket.connect();
   return (
     <>

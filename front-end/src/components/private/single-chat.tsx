@@ -1,6 +1,6 @@
 import React from "react";
 import api from "@/services/api";
-import type { ChatType, MessageType } from "@/types/api-types";
+import type { ChatType, MessageType, UserType } from "@/types/api-types";
 
 const SingleChat = ({
   chat,
@@ -11,14 +11,15 @@ const SingleChat = ({
   online: boolean;
   onClick: (chat: ChatType) => void;
 }) => {
-  const token = localStorage.getItem("token");
+  const auth_user = localStorage.getItem("auth_user") || "";
+  const user = JSON.parse(auth_user) as UserType;
   return (
     <div
       key={chat._id}
       className={`p-2 ${online ? "bg-green-100" : "bg-blue-100"}`}
       onClick={() => onClick(chat)}
     >
-      {chat.members.find((member) => member._id !== token)?.username}
+      {chat.members.find((member) => member._id !== user._id)?.username}
       <div>
         <LastMessage chatId={chat._id} />
       </div>

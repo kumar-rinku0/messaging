@@ -31,7 +31,7 @@ const getInfo = (token: string) => {
   return decode(token);
 };
 
-const getUser = (token: string, accessToken = KEY) => {
+const getUser = (token: string | undefined, accessToken = KEY) => {
   if (!token) return null;
   try {
     return verify(token, accessToken);

@@ -5,7 +5,7 @@ import ChatApp from "@/components/private/chat-app";
 import Header from "./components/header";
 import ChatMessages from "./components/private/chat-messages";
 export default function App() {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("auth_token");
   if (!token) {
     return (
       <Routes>
