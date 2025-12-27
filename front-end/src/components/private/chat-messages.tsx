@@ -36,12 +36,12 @@ const ChatMessages = () => {
   }>({ totalMessages: 0, page: 1, totalPages: 1, limit: 0 });
   const [chat, setChat] = React.useState<ChatType | null>(null);
   const [msg, setMsg] = React.useState<string>("");
-  const auth_user = localStorage.getItem("auth_user") || "";
-  const user = JSON.parse(auth_user) as UserType;
+  const auth_user_token = localStorage.getItem("auth_user") || "";
+  const auth_user = JSON.parse(auth_user_token) as UserType;
   function fetchChatMessages(page: number) {
     api
       .get<ResponseType>(
-        `/msg/chatId/${chatId}?page=${page}&userId=${user._id}`
+        `/msg/chatId/${chatId}?page=${page}&user=${auth_user._id}`
       )
       .then((response) => {
         // Handle the response and update state
@@ -93,19 +93,23 @@ const ChatMessages = () => {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     // Send the message to the API
-    if (!user || msg.trim() === "") {
+    if (!auth_user || msg.trim() === "") {
       console.error("No token found in localStorage or empty message");
       return;
     }
     api
-      .post(`/msg/create`, { msg: msg, chatId: chatId, sender: user._id })
+      .post(`/msg/create`, { msg: msg, chatId: chatId, sender: auth_user._id })
       .then((response) => {
         // Handle the response if needed
         const { message } = response.data;
         setMessages((prevMessages) => [...prevMessages, message]);
         setMsg(""); // Clear the input field after sending the message
         if (!chat) return;
-        socket.emit("msg", { chatId: chat._id, userId: user._id }, message);
+        socket.emit(
+          "msg",
+          { chatId: chat._id, userId: auth_user._id },
+          message
+        );
       });
   };
 
@@ -156,7 +160,7 @@ const ChatMessages = () => {
                 key={message._id}
                 className={`max-w-[80%] px-4 py-2 rounded-xl text-sm shadow
           ${
-            message.sender === user._id
+            message.sender === auth_user._id
               ? "self-end bg-green-500 text-white"
               : "self-start bg-gray-200 text-gray-900 dark:bg-gray-800 dark:text-white"
           }`}

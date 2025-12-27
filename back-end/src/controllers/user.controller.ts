@@ -1,16 +1,24 @@
 import { Request, Response } from "express";
-import User from "../models/user.model";
+import User, { Session } from "@/models/user.model";
 import { verifyPassword } from "@/utils/hashing";
 import { setUser } from "@/utils/jwt";
 
 const handleUserRegistration = async (req: Request, res: Response) => {
-  const { username, email, password } = req.body;
+  const { username, email, password, client } = req.body;
   const newUser = new User({
     username,
     password,
     email,
   });
   await newUser.save();
+  if (client) {
+    await createSession(
+      client,
+      newUser._id.toString(),
+      req.ip,
+      req.headers["user-agent"]
+    );
+  }
   const user = {
     _id: newUser._id.toString(),
     email: newUser.email,
@@ -18,12 +26,6 @@ const handleUserRegistration = async (req: Request, res: Response) => {
     username: newUser.username,
   };
   const auth_token = setUser(user);
-  res.cookie("auth_token", auth_token, {
-    signed: true,
-    httpOnly: true, // Optional: Makes the cookie inaccessible to client-side JavaScript
-    maxAge: 1000 * 60 * 60 * 24, // Optional: Cookie expiration time (1 day)
-  });
-
   res.status(201).json({
     message: "User registered successfully",
     userId: newUser._id,
@@ -34,7 +36,7 @@ const handleUserRegistration = async (req: Request, res: Response) => {
 };
 
 const handleUserLogin = async (req: Request, res: Response) => {
-  const { username, password } = req.body;
+  const { username, password, client } = req.body;
   const user = await User.findOne({ username });
   if (!user) {
     return res.status(404).json({ message: "User not found", ok: false });
@@ -43,6 +45,14 @@ const handleUserLogin = async (req: Request, res: Response) => {
   if (!isRightPassword) {
     return res.status(401).json({ message: "Invalid password", ok: false });
   }
+  if (client) {
+    await createSession(
+      client,
+      user._id.toString(),
+      req.ip,
+      req.headers["user-agent"]
+    );
+  }
   const authUser = {
     _id: user._id.toString(),
     email: user.email,
@@ -50,11 +60,6 @@ const handleUserLogin = async (req: Request, res: Response) => {
     username: user.username,
   };
   const auth_token = setUser(authUser);
-  res.cookie("auth_token", auth_token, {
-    signed: true,
-    httpOnly: true, // Optional: Makes the cookie inaccessible to client-side JavaScript
-    maxAge: 1000 * 60 * 60 * 24, // Optional: Cookie expiration time (1 day)
-  });
   return res.status(200).json({
     message: "Login successful",
     userId: user._id,
@@ -62,6 +67,20 @@ const handleUserLogin = async (req: Request, res: Response) => {
     auth_token,
     ok: true,
   });
+};
+
+const handleUserLogout = async (req: Request, res: Response) => {
+  const auth_user = req.user;
+  if (!auth_user) {
+    return res
+      .status(400)
+      .json({ message: "user isn't logged in.", ok: false });
+  }
+  const user = await Session.deleteMany({ userId: auth_user._id });
+  if (!user) {
+    return res.status(400).json({ message: "user not found.", ok: false });
+  }
+  return res.status(200).json({ message: "user logged out.", ok: true });
 };
 
 const handleGetAllUsers = async (req: Request, res: Response) => {
@@ -83,4 +102,30 @@ export {
   handleUserLogin,
   handleGetAllUsers,
   handleGetSearchedUser,
+  handleUserLogout,
+};
+
+const createSession = async (
+  client: {
+    id: string;
+    os?: string;
+    token?: string;
+  },
+  userId: string,
+  ip: string | undefined,
+  userAgent: string | undefined
+) => {
+  console.log(client);
+  const deviceInfo = {
+    deviceId: client.id,
+    userId: userId,
+    deviceName: client.os || "Unknown",
+    ip: ip,
+    userAgent: userAgent,
+    token: client.token,
+    lastUsed: Date.now(),
+  };
+  const session = new Session(deviceInfo);
+  await session.save();
+  return session;
 };

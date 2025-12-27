@@ -18,28 +18,35 @@ const userSchema = new Schema({
     unique: [true, "email must be unique."],
   },
   password: { type: String, required: [true, "password is required."] },
-  devices: {
-    type: [
-      {
-        deviceName: {
-          type: String,
-          required: true,
-        },
-        ip: {
-          type: String,
-          required: true,
-        },
-        userAgent: {
-          type: String,
-          required: true,
-        },
-        token: String,
-        lastUsed: Date,
-      },
-    ],
-    default: [],
-  },
 });
+
+const sessionSchema = new Schema({
+  userId: {
+    type: Schema.ObjectId,
+    required: [true, "user id is required."],
+  },
+  deviceId: {
+    type: String,
+    required: [true, "device id required."],
+    unique: [true, "device id must be unique."],
+  },
+  deviceName: {
+    type: String,
+    required: [true, "device name is required."],
+  },
+  ip: {
+    type: String,
+    required: [true, "ip is required."],
+  },
+  userAgent: {
+    type: String,
+    required: [true, "user agent is required."],
+  },
+  token: String,
+  lastUsed: Date,
+});
+
+export const Session = model("Session", sessionSchema);
 
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();

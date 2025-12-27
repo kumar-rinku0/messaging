@@ -46,12 +46,12 @@ import api from "@/services/api";
 
 export function AppSidebar() {
   const [chats, setChats] = React.useState<ChatType[]>([]);
-  const auth_user = localStorage.getItem("auth_user") || "";
-  const user = JSON.parse(auth_user) as UserType;
+  const auth_user_token = localStorage.getItem("auth_user") || "";
+  const auth_user = JSON.parse(auth_user_token) as UserType;
   React.useEffect(() => {
     function getChats() {
       api
-        .get<{ chat: ChatType[] }>(`/chat/private/userId/${user._id}`)
+        .get<{ chat: ChatType[] }>(`/chat/private/userId/${auth_user._id}`)
         .then((response) => {
           setChats(response.data.chat);
         });
@@ -71,8 +71,9 @@ export function AppSidebar() {
                     <Link to={`/${chat._id}`}>
                       <span>
                         {
-                          chat.members.find((member) => member._id !== user._id)
-                            ?.username
+                          chat.members.find(
+                            (member) => member._id !== auth_user._id
+                          )?.username
                         }
                       </span>
                     </Link>

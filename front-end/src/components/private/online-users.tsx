@@ -7,9 +7,9 @@ type UsersType = UserType[];
 
 const OnlineUsers = () => {
   const [onlineUsers, setOnlineUsers] = React.useState<UsersType>([]);
-  const auth_user = localStorage.getItem("auth_user") || "";
-  const user = JSON.parse(auth_user) as UserType;
-  console.log(user);
+  const auth_user_token = localStorage.getItem("auth_user") || "";
+  const auth_user = JSON.parse(auth_user_token) as UserType;
+  console.log(auth_user);
 
   useEffect(() => {
     const getOnlineUsers = (users: UsersType) => {
@@ -23,7 +23,7 @@ const OnlineUsers = () => {
     return () => {
       socket.off("online-users", getOnlineUsers);
     };
-  }, [user]);
+  }, [auth_user]);
 
   // useEffect(() => {
   //   // api.get<ResponseType>("/users/all").then((response) => {
