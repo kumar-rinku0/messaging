@@ -37,9 +37,9 @@ mongoose
   });
 
 // middlewares
+app.set("trust proxy", true);
 app.use(express.json({ limit: "40kb" }));
 app.use(express.urlencoded({ limit: "40kb", extended: true }));
-
 app.use(isLoggedInCheck);
 
 app.get("/", (req, res) => {
