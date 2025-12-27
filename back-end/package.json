@@ -12,7 +12,6 @@
   "author": "Rinku Kumar",
   "license": "ISC",
   "dependencies": {
-    "cookie-parser": "^1.4.7",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^8.17.1",
@@ -20,7 +19,6 @@
     "tsc-alias": "^1.8.16"
   },
   "devDependencies": {
-    "@types/cookie-parser": "^1.4.10",
     "@types/express": "^5.0.2",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^22.15.18",

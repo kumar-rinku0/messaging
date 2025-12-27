@@ -3,7 +3,6 @@ import mongoose from "mongoose";
 import { config } from "dotenv";
 import { createServer } from "http";
 import { Server } from "socket.io";
-import cookieParser from "cookie-parser";
 import type { Socket } from "socket.io";
 config();
 
@@ -38,7 +37,6 @@ mongoose
   });
 
 // middlewares
-app.use(cookieParser("oops"));
 app.use(express.json({ limit: "40kb" }));
 app.use(express.urlencoded({ limit: "40kb", extended: true }));
 
