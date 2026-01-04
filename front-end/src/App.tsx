@@ -24,7 +24,5 @@ export default function App() {
   );
 }
 // todo: implement message sending and receiving
-// 0. auth based on bearer token
-// 1. Create a message input component
-// 2. Connect the input to the message sending API
-// 3. Display messages in the chat window
+// 0. auth based on bearer token //done
+// 1. Display messages in the chat window
