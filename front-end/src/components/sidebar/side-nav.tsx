@@ -92,7 +92,7 @@ export default function SideNav() {
           {/* Top */}
           <Link to="/" className="flex items-center space-x-2 p-2">
             <span className="font-semibold">
-              {isMobile ? <MessageCircleMore /> : "Messaging"}
+              {isMobile ? <MessageCircleMore size={40} /> : "Messaging"}
             </span>
           </Link>
           <div>
