@@ -15,7 +15,7 @@ const Header = () => {
     <>
       <div className="flex">
         <SideNav />
-        <main className="flex-1">
+        <main className="flex-1 w-[calc(100vw-4rem)]">
           <Outlet />
         </main>
         <Toaster />

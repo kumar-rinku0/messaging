@@ -14,6 +14,7 @@ export type UserType = {
 export type ChatType = {
   _id: string;
   displayName: string;
+  displayAvatar: string;
   type: "group" | "private";
   members: UserType[];
 };
