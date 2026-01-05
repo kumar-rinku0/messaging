@@ -125,20 +125,30 @@ const ChatMessages = () => {
   }, [messages]);
 
   return (
-    <div>
-      <div className="h-10 p-2 flex items-center bg-white border-b-2 border-b-amber-100">
-        <span>
-          <ArrowLeft
-            className="mr-4 inline h-5 w-5 cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-50"
-            onClick={() => {
-              router("/");
-            }}
-          />
-        </span>
-        <span className="font-semibold">{chat?.displayName}</span>
+    <div className="h-[100vh]">
+      <div className="h-20 p-2 flex items-center bg-white border-b border-b-gray-200">
+        <ArrowLeft
+          className="mr-4 inline h-5 w-5 cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-50"
+          onClick={() => {
+            router("/");
+          }}
+        />
+        <div className="flex flex-1 items-center gap-2">
+          <div className="relative w-12 h-12">
+            <img
+              src={
+                chat?.displayAvatar ||
+                "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png"
+              }
+              alt=""
+              className="object-cover w-12 h-12 rounded-full"
+            />
+          </div>
+          <span className="font-semibold">{chat?.displayName}</span>
+        </div>
       </div>
       {/* <div className="flex h-[calc(100vh-40px)] flex-col items-end justify-end pb-4 px-1"> */}
-      <div className="flex h-[calc(100vh-40px)] flex-col pb-4 px-1">
+      <div className="flex h-[calc(100vh-5rem)] flex-col pb-4 px-1">
         <ScrollArea className="flex-1 w-full overflow-y-auto">
           {messages.length > 10 && count.page < count.totalPages ? (
             <Button
