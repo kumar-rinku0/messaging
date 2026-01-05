@@ -8,7 +8,7 @@ config();
 
 // middlewares
 import errorMiddleware from "@/middlewares/error.middleware";
-import { isLoggedInCheck } from "./middlewares/auth";
+import { isLoggedInCheck, onlyLoggedInUser } from "./middlewares/auth";
 
 // routers
 import userRouter from "@/routes/user.route";
@@ -51,8 +51,8 @@ app.get("/api", (req, res) => {
 });
 
 app.use("/api/user", userRouter);
-app.use("/api/chat", chatRouter);
-app.use("/api/msg", msgRouter);
+app.use("/api/chat", onlyLoggedInUser, chatRouter);
+app.use("/api/msg", onlyLoggedInUser, msgRouter);
 
 server.listen(port, () => {
   console.log(`listening on ${port}`);

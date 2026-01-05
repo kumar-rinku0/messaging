@@ -33,6 +33,12 @@ api.interceptors.response.use(
       if (error.response.status === 401) {
         // Token expired, redirect to login, etc.
         console.warn("Unauthorized access - possibly redirect to login");
+
+        // logging out!
+        localStorage.removeItem("auth_user");
+        localStorage.removeItem("auth_token");
+        localStorage.removeItem("session_id");
+        location.assign("/");
       } else if (error.response.status === 500) {
         console.error("Server error");
       }
