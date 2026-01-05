@@ -53,7 +53,7 @@ export default function SideNav() {
   useEffect(() => {
     const getOnlineUsers = (users: UserType[]) => {
       console.log("Online users from socket:", users);
-      const filtered = users.filter((user) => user._id !== user._id);
+      const filtered = users.filter((user) => user._id !== auth_user._id);
       setOnlineUsers(filtered);
     };
 
@@ -84,7 +84,7 @@ export default function SideNav() {
     return null;
   }
   const isMobile = useIsMobile();
-
+  console.log(onlineUsers);
   return (
     <div className="w-16 md:w-80 h-screen">
       <div className="border-r border-r-neutral-200 dark:border-r-neutral-800 transition-all duration-300 ease-in-out transform flex h-full bg-neutral-50 dark:bg-primary/50">
@@ -92,7 +92,7 @@ export default function SideNav() {
           {/* Top */}
           <Link to="/" className="flex items-center space-x-2 p-2">
             <span className="font-semibold">
-              {isMobile ? <MessageCircleMore /> : "Messaging"}
+              {isMobile ? <MessageCircleMore size={40} /> : "Messaging"}
             </span>
           </Link>
           <div>
