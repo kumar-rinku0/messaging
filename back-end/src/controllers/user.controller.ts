@@ -11,8 +11,9 @@ const handleUserRegistration = async (req: Request, res: Response) => {
     email,
   });
   await newUser.save();
+  let session_id = null;
   if (client) {
-    await createSession(req, newUser._id.toString());
+    session_id = await createSession(req, newUser._id.toString());
   }
   const user = {
     _id: newUser._id.toString(),
@@ -26,6 +27,7 @@ const handleUserRegistration = async (req: Request, res: Response) => {
     userId: newUser._id,
     user: user,
     auth_token,
+    session_id,
     ok: true,
   });
 };
@@ -40,8 +42,9 @@ const handleUserLogin = async (req: Request, res: Response) => {
   if (!isRightPassword) {
     return res.status(401).json({ message: "Invalid password", ok: false });
   }
+  let session_id = null;
   if (client) {
-    await createSession(req, user._id.toString());
+    session_id = await createSession(req, user._id.toString());
   }
   const authUser = {
     _id: user._id.toString(),
@@ -55,6 +58,7 @@ const handleUserLogin = async (req: Request, res: Response) => {
     userId: user._id,
     user: authUser,
     auth_token,
+    session_id,
     ok: true,
   });
 };
@@ -102,15 +106,14 @@ const createSession = async (req: Request, userId: string) => {
     (req.socket.remoteAddress as string) ||
     "";
   const deviceInfo = {
-    deviceId: client.id,
     userId: userId,
     deviceName: client.os || "Unknown",
     ip: ip,
-    userAgent: req.headers["user-agent"],
+    userAgent: client.agent || req.headers["user-agent"],
     token: client.token,
     lastUsed: Date.now(),
   };
   const session = new Session(deviceInfo);
   await session.save();
-  return session;
+  return session._id;
 };

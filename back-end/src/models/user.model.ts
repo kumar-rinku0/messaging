@@ -25,11 +25,6 @@ const sessionSchema = new Schema({
     type: Schema.ObjectId,
     required: [true, "user id is required."],
   },
-  deviceId: {
-    type: String,
-    required: [true, "device id required."],
-    unique: [true, "device id must be unique."],
-  },
   deviceName: {
     type: String,
     required: [true, "device name is required."],
