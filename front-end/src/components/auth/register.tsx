@@ -3,7 +3,7 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { useState } from "react";
-import { getOS, setSessionID } from "@/utils/session";
+import { getOS } from "@/utils/session";
 
 const Register = () => {
   const [error, setError] = useState<string | null>(null);
@@ -16,7 +16,6 @@ const Register = () => {
       ...obj,
       client: {
         os: getOS(),
-        id: setSessionID(),
       },
     };
     api
@@ -26,6 +25,7 @@ const Register = () => {
         const auth_user = JSON.stringify(response.data.user);
         localStorage.setItem("auth_user", auth_user);
         localStorage.setItem("auth_token", response.data.auth_token);
+        localStorage.setItem("session_id", response.data.session_id);
         location.reload();
       })
       .catch((error) => {
