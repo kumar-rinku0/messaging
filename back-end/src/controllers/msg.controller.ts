@@ -24,7 +24,7 @@ const handleCreateMessage = async (req: Request, res: Response) => {
   const membersExceptSender = chat.members.filter(
     (m) => m.toString() !== sender
   );
-  createNotifications(membersExceptSender, message, user.username);
+  await createNotifications(membersExceptSender, message, user.username);
 
   return res.status(201).json({ message, ok: true });
 };
