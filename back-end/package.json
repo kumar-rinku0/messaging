@@ -12,6 +12,7 @@
   "author": "Rinku Kumar",
   "license": "ISC",
   "dependencies": {
+    "expo-server-sdk": "^4.0.0",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^8.17.1",

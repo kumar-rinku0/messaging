@@ -2,10 +2,11 @@ import { Request, Response } from "express";
 import Message from "@/models/msg.model";
 import Chat from "@/models/chat.model";
 import { getFormatedChat } from "@/utils/type-fix";
+import { createNotifications } from "@/utils/expo-notification";
 
 const handleCreateMessage = async (req: Request, res: Response) => {
   const { chatId, sender, msg } = req.body;
-
+  const user = req.user;
   const chat = await Chat.findById(chatId);
   if (!chat) {
     return res.status(400).json({ message: "chat not found", ok: false });
@@ -19,6 +20,11 @@ const handleCreateMessage = async (req: Request, res: Response) => {
   await message.save();
   chat.lastMessage = message._id;
   await chat.save();
+
+  const membersExceptSender = chat.members.filter(
+    (m) => m.toString() !== sender
+  );
+  createNotifications(membersExceptSender, message, user.username);
 
   return res.status(201).json({ message, ok: true });
 };
