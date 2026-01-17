@@ -6,7 +6,6 @@ import { easeOut } from "motion"; // Add this import at the top with other impor
 import { ArrowLeft, SendHorizonal } from "lucide-react";
 import socket from "@/services/socket";
 import { useParams, useNavigate } from "react-router";
-import { toast } from "sonner";
 import { ScrollArea } from "../ui/scroll-area";
 import { Button } from "../ui/button";
 
@@ -41,7 +40,7 @@ const ChatMessages = () => {
   function fetchChatMessages(page: number) {
     api
       .get<ResponseType>(
-        `/msg/chatId/${chatId}?page=${page}&user=${auth_user._id}`
+        `/msg/chatId/${chatId}?page=${page}&user=${auth_user._id}`,
       )
       .then((response) => {
         // Handle the response and update state
@@ -64,27 +63,17 @@ const ChatMessages = () => {
       });
   }
   useEffect(() => {
+    if (!chatId) return;
+
     function onChatMessage(newMsg: MessageType) {
-      if (newMsg.chat !== chatId) {
-        toast.message(`new message`, {
-          description: newMsg.msg,
-          duration: 5000,
-          action: {
-            label: "View",
-            onClick: () => {
-              // navigate to chat
-              location.assign(`/${newMsg.chat}`);
-            },
-          },
-        });
-        return;
-      }
       setMessages((prevMessages) => [...prevMessages, newMsg]);
     }
     fetchChatMessages(1);
+    socket.emit("join-chat", chatId);
     socket.on("msg", onChatMessage);
     return () => {
       setMessages([]);
+      socket.emit("leave-chat", chatId);
       socket.off("msg", onChatMessage);
       // setTimeout(() => {}, 1000); // to avoid react state update on unmounted component error
     };
@@ -108,7 +97,7 @@ const ChatMessages = () => {
         socket.emit(
           "msg",
           { chatId: chat._id, userId: auth_user._id },
-          message
+          message,
         );
       });
   };

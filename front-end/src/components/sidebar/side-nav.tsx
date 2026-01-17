@@ -1,6 +1,6 @@
 import React, { Fragment, useEffect } from "react";
 import { Link, useLocation } from "react-router";
-import type { ChatType, UserType } from "@/types/api-types";
+import type { ChatType, MessageType, UserType } from "@/types/api-types";
 import api from "@/services/api";
 import socket from "@/services/socket";
 import { Button } from "../ui/button";
@@ -57,10 +57,26 @@ export default function SideNav() {
       setOnlineUsers(filtered);
     };
 
-    socket.on("online-users", getOnlineUsers);
+    const onNotifications = (newMsg: MessageType) => {
+      toast.message(`new message`, {
+        description: newMsg.msg,
+        duration: 5000,
+        action: {
+          label: "View",
+          onClick: () => {
+            // navigate to chat
+            location.assign(`/${newMsg.chat}`);
+          },
+        },
+      });
+      return;
+    };
 
+    socket.on("online-users", getOnlineUsers);
+    socket.on("notification", onNotifications);
     return () => {
       socket.off("online-users", getOnlineUsers);
+      socket.off("notification", onNotifications);
     };
   }, []);
 
@@ -125,7 +141,7 @@ export default function SideNav() {
                 })
                 .map((chat) => {
                   const isOnline = onlineUsers.some(
-                    (user) => user.username === chat.displayName
+                    (user) => user.username === chat.displayName,
                   );
                   if (isMobile) {
                     return (

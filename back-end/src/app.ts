@@ -15,6 +15,7 @@ import userRouter from "@/routes/user.route";
 import chatRouter from "@/routes/chat.route";
 import msgRouter from "@/routes/msg.route";
 import { getMembersFromChat, getOnlineUsers } from "./utils/type-fix";
+import { createNotifications } from "./utils/expo-notification";
 
 const port = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/myapp";
@@ -72,39 +73,47 @@ io.on("connection", async (socket: Socket) => {
   socket.emit("online-users", filteredUsers);
   socket.broadcast.emit("online-users", filteredUsers);
 
+  socket.on("join-chat", (chatId) => {
+    socket.join(chatId);
+    console.log(`User ${userId} joined chat ${chatId}`);
+  });
+
   socket.on(
     "msg",
     async (
       { chatId, userId }: { chatId: string; userId: string },
-      msg: any
+      msg: any,
     ) => {
-      console.log("chatId:", chatId);
-      console.log("message received:", msg);
+      socket.join(chatId);
+      socket.to(chatId).emit("msg", msg);
+      socket.except(chatId).emit("notification", msg);
+      // expo notification
       const who = await getMembersFromChat(chatId, userId);
-      who.map((recipientId) => {
-        const recipientSocket = onlineUsers.find(
-          (user) => user.userId === recipientId.toString()
-        );
-        if (recipientSocket) {
-          socket.to(recipientSocket.socketId).emit("msg", msg);
-        }
-      });
-    }
+      const membersExceptSender = who.filter((m) => m.toString() !== userId);
+      const sender = filteredUsers.find((v) => v._id.toString() === userId);
+      const username = sender?.username || "new message";
+      await createNotifications(membersExceptSender, msg, username);
+    },
   );
 
   // user typing status
-  socket.on("typing", (userId) => {
-    const user = onlineUsers.find((u) => u.userId === userId);
+  socket.on("typing", (thisUser) => {
+    const user = onlineUsers.find((u) => u.userId === thisUser);
     if (user) {
-      socket.to(user.socketId).emit("user_typing", userId);
+      socket.to(user.socketId).emit("user_typing", thisUser);
     }
   });
 
-  socket.on("stop_typing", (userId) => {
-    const user = onlineUsers.find((u) => u.userId === userId);
+  socket.on("stop_typing", (thisUser) => {
+    const user = onlineUsers.find((u) => u.userId === thisUser);
     if (user) {
-      socket.to(user.socketId).emit("user_stop_typing", userId);
+      socket.to(user.socketId).emit("user_stop_typing", thisUser);
     }
+  });
+
+  socket.on("leave-chat", (chatId) => {
+    socket.leave(chatId);
+    console.log(`User ${userId} left chat ${chatId}`);
   });
 
   socket.on("disconnect", async () => {

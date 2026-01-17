@@ -9,7 +9,7 @@ export const getFormatedChat = (chat: any, userId: any) => {
     displayAvatar = chat.avatar;
   } else {
     const otherUser = chat.members.find(
-      (m: any) => m._id.toString() !== userId.toString()
+      (m: any) => m._id.toString() !== userId.toString(),
     ) as any;
     displayName = otherUser?.username;
     displayAvatar = otherUser?.avatar;
@@ -25,7 +25,7 @@ export const getFormatedChat = (chat: any, userId: any) => {
 };
 
 export const getOnlineUsers = async (
-  onlineUsers: { socketId: string; userId: string }[]
+  onlineUsers: { socketId: string; userId: string }[],
 ) => {
   const users = await User.find({
     _id: { $in: onlineUsers.map((user) => user.userId) },
