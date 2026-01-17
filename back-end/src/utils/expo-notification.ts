@@ -35,7 +35,7 @@ interface MessagePayload {
 export const createNotifications = async (
   members: Types.ObjectId[],
   message: MessagePayload,
-  sender: string
+  senderName: string,
 ) => {
   const notifications: PushNotification[] = [];
 
@@ -50,7 +50,7 @@ export const createNotifications = async (
         notifications.push({
           to: session.token,
           sound: "default",
-          title: sender,
+          title: senderName,
           body: message.msg,
           data: {
             chatId: message.chat,

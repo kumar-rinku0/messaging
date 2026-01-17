@@ -14,7 +14,12 @@ import { isLoggedInCheck, onlyLoggedInUser } from "./middlewares/auth";
 import userRouter from "@/routes/user.route";
 import chatRouter from "@/routes/chat.route";
 import msgRouter from "@/routes/msg.route";
-import { getMembersFromChat, getOnlineUsers } from "./utils/type-fix";
+import {
+  getChat,
+  getMembersFromChat,
+  getOnlineUsers,
+  updateNotificationCount,
+} from "./utils/type-fix";
 import { createNotifications } from "./utils/expo-notification";
 
 const port = process.env.PORT || 3000;
@@ -87,12 +92,28 @@ io.on("connection", async (socket: Socket) => {
       socket.join(chatId);
       socket.to(chatId).emit("msg", msg);
       socket.except(chatId).emit("notification", msg);
-      // expo notification
-      const who = await getMembersFromChat(chatId, userId);
-      const membersExceptSender = who.filter((m) => m.toString() !== userId);
+      await updateNotificationCount({ pos: "inc", chatId, userId });
+      const membersExceptSender = await getMembersFromChat(chatId, userId);
       const sender = filteredUsers.find((v) => v._id.toString() === userId);
       const username = sender?.username || "new message";
       await createNotifications(membersExceptSender, msg, username);
+    },
+  );
+
+  socket.on(
+    "notification_seen",
+    async ({
+      notificationCount,
+      chatId,
+      userId,
+    }: {
+      notificationCount: number;
+      chatId: string;
+      userId: string;
+    }) => {
+      if (notificationCount > 0) {
+        await updateNotificationCount({ pos: "reset", chatId, userId });
+      }
     },
   );
 

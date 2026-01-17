@@ -11,7 +11,7 @@ const handleCreateMessage = async (req: Request, res: Response) => {
     return res.status(400).json({ message: "chat not found", ok: false });
   }
   const message = new Message({
-    chat: chatId,
+    chatId,
     sender,
     msg,
     seenBy: [sender],
@@ -36,7 +36,7 @@ const handleGetMessagesByChatId = async (req: Request, res: Response) => {
 
   // Pagination logic (optional)
   const skip = (Number(page) - 1) * Number(limit);
-  const query = { chat: chatId };
+  const query = { chatId: chatId };
 
   const totalMessages = await Message.countDocuments(query);
 
@@ -63,7 +63,7 @@ const handleGetAllMessagesByChatId = async (req: Request, res: Response) => {
   if (!chat) {
     return res.status(404).json({ message: "Chat not found", ok: false });
   }
-  const query = { chat: chatId };
+  const query = { chatId: chatId };
   const sorted = -1;
   const totalMessages = await Message.countDocuments(query);
   const messages = await Message.find(query).sort({ createdAt: sorted });
@@ -80,7 +80,7 @@ const handleGetAllMessagesByChatId = async (req: Request, res: Response) => {
 const handleGetLastMessageByChatId = async (req: Request, res: Response) => {
   const { chatId } = req.params;
 
-  const lastMessage = await Message.findOne({ chat: chatId }).sort({
+  const lastMessage = await Message.findOne({ chatId: chatId }).sort({
     createdAt: -1,
   });
   return res.status(200).json({ lastMessage, ok: true });

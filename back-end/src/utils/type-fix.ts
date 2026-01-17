@@ -38,3 +38,47 @@ export const getMembersFromChat = async (chatId: string, userId: string) => {
   if (!chat) return [];
   return chat.members.filter((m) => m.toString() !== userId.toString());
 };
+
+export const getChat = async (chatId: string) => {
+  const chat = await Chat.findById(chatId);
+  if (!chat) return null;
+  return chat;
+};
+
+type NotificationUpdateProp = {
+  pos: "inc" | "dec" | "reset";
+  chatId: string;
+  userId: string;
+};
+
+export const updateNotificationCount = async ({
+  pos,
+  chatId,
+  userId,
+}: NotificationUpdateProp) => {
+  if (pos === "inc") {
+    await Chat.updateOne(
+      {
+        _id: chatId,
+        "notification.userId": userId,
+      },
+      {
+        $inc: { "notification.$.count": 1 },
+      },
+    );
+    return true;
+  } else if (pos === "reset") {
+    await Chat.updateOne(
+      {
+        _id: chatId,
+        "notification.userId": userId,
+      },
+      {
+        $set: { "notification.$.count": 0 },
+      },
+    );
+    return true;
+  } else {
+    return false;
+  }
+};
