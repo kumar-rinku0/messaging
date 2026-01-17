@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import mongoose, { Schema, model } from "mongoose";
 
 const chatSchema = new Schema(
   {
@@ -43,10 +43,37 @@ const chatSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "Message",
     },
+    notification: {
+      type: [
+        {
+          userId: {
+            type: Schema.Types.ObjectId,
+            ref: "User",
+            required: true,
+          },
+          count: {
+            type: Number,
+            default: 0,
+          },
+        },
+      ],
+      default: [],
+    },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const Chat = model("Chat", chatSchema);
+
+chatSchema.pre("save", function (next) {
+  if (this.isModified("members")) {
+    // Handle members modification if needed
+    this.set(
+      "notification",
+      this.members.map((m) => ({ userId: m, count: 0 })),
+    );
+  }
+  next();
+});
 
 export default Chat;

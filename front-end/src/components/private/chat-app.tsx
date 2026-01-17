@@ -27,7 +27,7 @@ const ChatApp = () => {
           label: "View",
           onClick: () => {
             // navigate to chat
-            location.assign(`/${newMsg.chat}`);
+            location.assign(`/${newMsg.chatId}`);
           },
         },
       });
@@ -94,7 +94,7 @@ const ChatApp = () => {
                         .then((response) => {
                           console.log(
                             "Private chat created or fetched:",
-                            response.data
+                            response.data,
                           );
                           location.assign(`/${response.data.chat._id}`); // Redirect to the chat page
                         });

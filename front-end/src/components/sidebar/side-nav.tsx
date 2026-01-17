@@ -65,7 +65,7 @@ export default function SideNav() {
           label: "View",
           onClick: () => {
             // navigate to chat
-            location.assign(`/${newMsg.chat}`);
+            location.assign(`/${newMsg.chatId}`);
           },
         },
       });

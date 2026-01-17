@@ -2,7 +2,7 @@ import { Schema, model } from "mongoose";
 
 const msgSchema = new Schema(
   {
-    chat: {
+    chatId: {
       type: Schema.Types.ObjectId,
       ref: "Chat",
       required: true,
@@ -26,7 +26,7 @@ const msgSchema = new Schema(
       ],
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const Message = model("Message", msgSchema);
