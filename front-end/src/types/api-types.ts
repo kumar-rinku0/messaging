@@ -17,4 +17,5 @@ export type ChatType = {
   displayAvatar: string;
   type: "group" | "private";
   members: UserType[];
+  notificationCount: number;
 };

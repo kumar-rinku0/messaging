@@ -100,7 +100,7 @@ export default function SideNav() {
     return null;
   }
   const isMobile = useIsMobile();
-  console.log(onlineUsers);
+  console.log(chats);
   return (
     <div className="w-16 md:w-80 h-screen">
       <div className="border-r border-r-neutral-200 dark:border-r-neutral-800 transition-all duration-300 ease-in-out transform flex h-full bg-neutral-50 dark:bg-primary/50">
@@ -166,6 +166,7 @@ export default function SideNav() {
                         <SideNavItem
                           label={chat.displayName}
                           avatar={chat.displayAvatar}
+                          notificationCount={chat.notificationCount}
                           path={`/${chat._id}`}
                           active={isNavItemActive(pathname, `/${chat._id}`)}
                           isOnline={
@@ -201,14 +202,15 @@ export default function SideNav() {
 export const SideNavItem: React.FC<{
   label: string;
   avatar: string;
+  notificationCount: number;
   path: string;
   active: boolean;
   isOnline?: boolean;
-}> = ({ label, avatar, path, active, isOnline }) => {
+}> = ({ label, avatar, path, active, notificationCount, isOnline }) => {
   return (
     <Link
       to={path}
-      className={`h-full relative flex items-center whitespace-nowrap rounded-md ${
+      className={`h-full relative flex justify-start items-center whitespace-nowrap rounded-md ${
         active
           ? "font-base text-sm bg-neutral-200 shadow-sm text-neutral-700 dark:bg-neutral-800 dark:text-white"
           : "hover:bg-neutral-200 hover:text-neutral-700 text-neutral-500 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white"
@@ -220,17 +222,25 @@ export const SideNavItem: React.FC<{
           alt=""
           className="object-cover w-12 h-12 rounded-full"
         />
+        {isOnline !== undefined && (
+          <span
+            className={`absolute top-0 right-0 h-3 w-3 rounded-full border-2 border-white dark:border-black ${
+              isOnline ? "bg-green-500" : "bg-gray-400"
+            }`}
+            title={isOnline ? "Online" : "Offline"}
+          ></span>
+        )}
       </div>
       <div className="relative font-base text-sm py-1.5 px-2 flex flex-row items-center space-x-2 rounded-md duration-100">
         <span className="font-medium truncate">{label}</span>
       </div>
-      {isOnline !== undefined && (
+      {notificationCount !== 0 && (
         <span
-          className={`absolute top-2 right-2 h-3 w-3 rounded-full border-2 border-white dark:border-black ${
-            isOnline ? "bg-green-500" : "bg-gray-400"
-          }`}
-          title={isOnline ? "Online" : "Offline"}
-        ></span>
+          className={`flex justify-center items-center absolute top-3 right-2 h-6 w-6 rounded-full border-2 border-white dark:border-black bg-red-500 font-bold text-xs truncate text-white`}
+          title={`${notificationCount}`}
+        >
+          {notificationCount}
+        </span>
       )}
     </Link>
   );
