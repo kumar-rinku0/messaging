@@ -78,8 +78,9 @@ io.on("connection", async (socket: Socket) => {
   socket.emit("online-users", filteredUsers);
   socket.broadcast.emit("online-users", filteredUsers);
 
-  socket.on("join-chat", (chatId) => {
+  socket.on("join-chat", async (chatId) => {
     socket.join(chatId);
+    await updateNotificationCount({ pos: "reset", chatId, userId });
     console.log(`User ${userId} joined chat ${chatId}`);
   });
 
@@ -91,29 +92,19 @@ io.on("connection", async (socket: Socket) => {
     ) => {
       socket.join(chatId);
       socket.to(chatId).emit("msg", msg);
-      socket.except(chatId).emit("notification", msg);
       await updateNotificationCount({ pos: "inc", chatId, userId });
       const membersExceptSender = await getMembersFromChat(chatId, userId);
+      membersExceptSender.map((member) => {
+        const isMemberOnline = onlineUsers.some(
+          (onlineUser) => onlineUser.userId === member.toString(),
+        );
+        if (isMemberOnline) {
+          socket.except(chatId).emit("notification", msg);
+        }
+      });
       const sender = filteredUsers.find((v) => v._id.toString() === userId);
       const username = sender?.username || "new message";
       await createNotifications(membersExceptSender, msg, username);
-    },
-  );
-
-  socket.on(
-    "notification_seen",
-    async ({
-      notificationCount,
-      chatId,
-      userId,
-    }: {
-      notificationCount: number;
-      chatId: string;
-      userId: string;
-    }) => {
-      if (notificationCount > 0) {
-        await updateNotificationCount({ pos: "reset", chatId, userId });
-      }
     },
   );
 
@@ -132,8 +123,9 @@ io.on("connection", async (socket: Socket) => {
     }
   });
 
-  socket.on("leave-chat", (chatId) => {
+  socket.on("leave-chat", async (chatId) => {
     socket.leave(chatId);
+    await updateNotificationCount({ pos: "reset", chatId, userId });
     console.log(`User ${userId} left chat ${chatId}`);
   });
 
