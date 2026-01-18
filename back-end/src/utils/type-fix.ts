@@ -14,7 +14,9 @@ export const getFormatedChat = (chat: any, userId: any) => {
     displayName = otherUser?.username;
     displayAvatar = otherUser?.avatar;
   }
-  const notification = chat.notification.find((n: any) => n.userId === userId);
+  const notification = chat.notification.find(
+    (n: any) => n.userId.toString() === userId,
+  );
   return {
     _id: chat._id,
     type: chat.type,
@@ -22,7 +24,7 @@ export const getFormatedChat = (chat: any, userId: any) => {
     displayName,
     displayAvatar,
     lastMessage: chat.lastMessage,
-    notificationCount: notification ? notification.count : 0,
+    notificationCount: notification.count,
   };
 };
 
@@ -68,18 +70,20 @@ export const updateNotificationCount = async ({
       },
       {
         arrayFilters: [{ "n.userId": { $ne: userId } }],
+        timestamps: false,
       },
     );
   } else if (pos === "reset") {
     await Chat.updateOne(
-      { _id: chatId },
       {
-        $set: {
-          "notification.$[n].count": 0,
-        },
+        _id: chatId,
+        "notification.userId": userId,
       },
       {
-        arrayFilters: [{ "n.userId": { $ne: userId } }],
+        $set: { "notification.$.count": 0 },
+      },
+      {
+        timestamps: false,
       },
     );
   }

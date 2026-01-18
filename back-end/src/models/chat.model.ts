@@ -55,6 +55,7 @@ const chatSchema = new Schema(
             type: Number,
             default: 0,
           },
+          _id: false,
         },
       ],
       default: [],
@@ -62,8 +63,6 @@ const chatSchema = new Schema(
   },
   { timestamps: true },
 );
-
-const Chat = model("Chat", chatSchema);
 
 chatSchema.pre("save", function (next) {
   if (this.isModified("members")) {
@@ -75,5 +74,7 @@ chatSchema.pre("save", function (next) {
   }
   next();
 });
+
+const Chat = model("Chat", chatSchema);
 
 export default Chat;
