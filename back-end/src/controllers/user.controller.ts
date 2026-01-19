@@ -91,12 +91,32 @@ const handleGetSearchedUser = async (req: Request, res: Response) => {
   return res.status(200).json({ users: users, ok: true });
 };
 
+const handleUpdateUserDetails = async (req: Request, res: Response) => {
+  const { avatar, email, username } = req.body;
+  const auth_user = req.user;
+  const user = await User.findById(auth_user._id).select(
+    "avatar email username",
+  );
+  if (!user) {
+    return res.status(400).json({ ok: false, message: "user not found." });
+  }
+  user.avatar = !!avatar ? avatar : user.avatar;
+  user.email = !!email ? email : user.email;
+  user.username = !!username ? username : user.username;
+  await user.save();
+
+  return res
+    .status(400)
+    .json({ ok: true, message: "user updated.", updatedUser: user });
+};
+
 export {
   handleUserRegistration,
   handleUserLogin,
   handleGetAllUsers,
   handleGetSearchedUser,
   handleUserLogout,
+  handleUpdateUserDetails,
 };
 
 const createSession = async (req: Request, userId: string) => {

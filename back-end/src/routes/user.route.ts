@@ -5,6 +5,7 @@ import {
   handleUserLogin,
   handleUserLogout,
   handleUserRegistration,
+  handleUpdateUserDetails,
 } from "@/controllers/user.controller";
 import asyncWrap from "@/utils/async-wrap";
 import { handleGetCloudinarySign } from "@/utils/cloud-init";
@@ -18,6 +19,10 @@ userRouter.route("/logout").delete(asyncWrap(handleUserLogout));
 
 // protected routes
 userRouter.route("/all").get(onlyLoggedInUser, asyncWrap(handleGetAllUsers)); // Endpoint to get all users
+
+userRouter
+  .route("/update")
+  .put(onlyLoggedInUser, asyncWrap(handleUpdateUserDetails));
 
 userRouter
   .route("/search")
