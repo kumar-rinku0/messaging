@@ -106,7 +106,7 @@ const handleUpdateUserDetails = async (req: Request, res: Response) => {
   await user.save();
 
   return res
-    .status(400)
+    .status(200)
     .json({ ok: true, message: "user updated.", updatedUser: user });
 };
 

@@ -1,12 +1,13 @@
 import React, { Fragment, useEffect } from "react";
 import { Link, useLocation } from "react-router";
-import type { ChatType, MessageType, UserType } from "@/types/api-types";
-import api from "@/services/api";
+import type { MessageType, UserType } from "@/types/api-types";
 import socket from "@/services/socket";
 import { Button } from "../ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { LogOut, MessageCircleMore } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/use-auth";
+import { useData } from "@/hooks/use-data";
 // import {
 //   requestNotificationPermission,
 //   showNotification,
@@ -15,7 +16,8 @@ import { toast } from "sonner";
 const chatTypes = ["private", "group", "all"];
 
 export default function SideNav() {
-  const [chats, setChats] = React.useState<ChatType[]>([]);
+  const { logout } = useAuth();
+  const { chats } = useData();
   const [currType, setCurrentType] = React.useState(chatTypes[0]);
   const auth_user_token = localStorage.getItem("auth_user") || "";
   const auth_user = JSON.parse(auth_user_token) as UserType;
@@ -34,21 +36,6 @@ export default function SideNav() {
   //     showNotification("New Message", { body: newMsg.msg });
   //   }
   // }
-
-  useEffect(() => {
-    if (!auth_user) {
-      location.assign("/");
-    } else {
-      const getChats = () => {
-        api
-          .get<{ chats: ChatType[] }>(`/chat/all/userId/${auth_user._id}`)
-          .then((response) => {
-            setChats(response.data.chats);
-          });
-      };
-      getChats();
-    }
-  }, []);
 
   useEffect(() => {
     const getOnlineUsers = (users: UserType[]) => {
@@ -81,26 +68,13 @@ export default function SideNav() {
   }, []);
 
   const handleLogout = async () => {
-    api
-      .delete("/user/logout")
-      .then((res) => {
-        socket.disconnect();
-        localStorage.removeItem("auth_token");
-        localStorage.removeItem("auth_user");
-        localStorage.removeItem("session_id");
-        console.log(res.data.message);
-        location.assign("/");
-      })
-      .catch((err) => {
-        toast.error(err.response.data.message || err.message);
-      });
+    await logout();
   };
 
-  if (!auth_user) {
-    return null;
-  }
   const isMobile = useIsMobile();
-  console.log(chats);
+  if (!chats) {
+    return <div>NO Chats Found.</div>;
+  }
   return (
     <div className="w-16 md:w-80 h-screen">
       <div className="border-r border-r-neutral-200 dark:border-r-neutral-800 transition-all duration-300 ease-in-out transform flex h-full bg-neutral-50 dark:bg-primary/50">

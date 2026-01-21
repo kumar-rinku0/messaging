@@ -4,8 +4,18 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import React from "react";
 import { getOS } from "@/utils/session";
+import { useAuth } from "@/hooks/use-auth";
+import type { UserType } from "@/types/api-types";
+
+type ResponseType = {
+  ok: boolean;
+  user: UserType;
+  session_id: string;
+  auth_token: string;
+};
 
 const Login = () => {
+  const { login } = useAuth();
   const [error, setError] = React.useState<string | null>(null);
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -19,14 +29,11 @@ const Login = () => {
       },
     };
     api
-      .post("/user/login", newObj)
+      .post<ResponseType>("/user/login", newObj)
       .then((response) => {
         console.log("Login successful:", response.data);
-        const auth_user = JSON.stringify(response.data.user);
-        localStorage.setItem("auth_user", auth_user);
-        localStorage.setItem("auth_token", response.data.auth_token);
-        localStorage.setItem("session_id", response.data.session_id);
-        location.reload();
+        const { user, session_id, auth_token } = response.data;
+        login(auth_token, user, session_id);
       })
       .catch((error) => {
         setError(error.response?.data?.message || "Login failed");
