@@ -1,11 +1,8 @@
-import React, { Fragment, useEffect } from "react";
+import React, { Fragment } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
-import type { MessageType, UserType } from "@/types/api-types";
-import socket from "@/services/socket";
 import { Button } from "../ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { LogOut, MessageCircleMore } from "lucide-react";
-import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { useData } from "@/hooks/use-data";
 // import {
@@ -20,7 +17,7 @@ export default function SideNav() {
   const isMobile = useIsMobile();
   const { authInfo, logout } = useAuth();
   if (!authInfo) return;
-  const { chats } = useData();
+  const { chats, onlineUsers } = useData();
   if (!chats) return null;
   const [currType, setCurrentType] = React.useState(chatTypes[0]);
 
@@ -28,48 +25,6 @@ export default function SideNav() {
   function isNavItemActive(pathname: string, path: string) {
     return pathname === path;
   }
-
-  const [onlineUsers, setOnlineUsers] = React.useState<UserType[]>([]);
-
-  // async function onMessage(newMsg: { msg: string }) {
-  //   console.log("Received chat message:", newMsg);
-  //   const permissionGranted = await requestNotificationPermission();
-  //   if (permissionGranted) {
-  //     showNotification("New Message", { body: newMsg.msg });
-  //   }
-  // }
-
-  useEffect(() => {
-    const getOnlineUsers = (users: UserType[]) => {
-      console.log("Online users from socket:", users);
-      const filtered = users.filter(
-        (user) => user._id !== authInfo.auth_user._id,
-      );
-      setOnlineUsers(filtered);
-    };
-
-    const onNotifications = (newMsg: MessageType) => {
-      toast.message(`new message`, {
-        description: newMsg.msg,
-        duration: 5000,
-        action: {
-          label: "View",
-          onClick: () => {
-            // navigate to chat
-            location.assign(`/${newMsg.chatId}`);
-          },
-        },
-      });
-      return;
-    };
-
-    socket.on("online-users", getOnlineUsers);
-    socket.on("notification", onNotifications);
-    return () => {
-      socket.off("online-users", getOnlineUsers);
-      socket.off("notification", onNotifications);
-    };
-  }, []);
 
   const handleLogout = async () => {
     await logout();
@@ -126,6 +81,7 @@ export default function SideNav() {
                             label={chat.displayName}
                             avatar={chat.displayAvatar}
                             path={`/${chat._id}`}
+                            notificationCount={chat.notificationCount}
                             active={isNavItemActive(pathname, `/${chat._id}`)}
                             isOnline={
                               chat.type === "private" ? isOnline : undefined
@@ -227,7 +183,8 @@ const MobileSideNavItem: React.FC<{
   path: string;
   active: boolean;
   isOnline?: boolean;
-}> = ({ avatar, path, active, isOnline }) => {
+  notificationCount: number;
+}> = ({ avatar, path, active, isOnline, notificationCount }) => {
   return (
     <Link
       to={path}
@@ -247,9 +204,17 @@ const MobileSideNavItem: React.FC<{
           className="object-cover w-12 h-12 rounded-full"
         />
       </div>
+      {notificationCount !== 0 && (
+        <span
+          className={`flex justify-center items-center absolute -bottom-1 -right-1 h-6 w-6 rounded-full border-2 border-white dark:border-black bg-red-500 font-bold text-xs truncate text-white`}
+          title={`${notificationCount}`}
+        >
+          {notificationCount}
+        </span>
+      )}
       {isOnline !== undefined && (
         <span
-          className={`absolute top-2 right-2 h-3 w-3 rounded-full border-2 border-white dark:border-black ${
+          className={`absolute top-0 right-0 h-3 w-3 rounded-full border-2 border-white dark:border-black ${
             isOnline ? "bg-green-500" : "bg-gray-400"
           }`}
           title={isOnline ? "Online" : "Offline"}

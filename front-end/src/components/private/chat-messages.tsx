@@ -122,7 +122,7 @@ const ChatMessages = () => {
 
   return (
     <div className="h-[100vh]">
-      <div className="h-20 p-2 flex items-center bg-white border-b border-b-gray-200">
+      <div className="h-14 px-2 flex items-center bg-white border-b border-b-gray-200">
         <ArrowLeft
           className="mr-4 inline h-5 w-5 cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-50"
           onClick={() => {
@@ -144,7 +144,7 @@ const ChatMessages = () => {
         </div>
       </div>
       {/* <div className="flex h-[calc(100vh-40px)] flex-col items-end justify-end pb-4 px-1"> */}
-      <div className="flex h-[calc(100vh-5rem)] flex-col pb-4 px-1">
+      <div className="flex h-[calc(100vh-3.5rem)] flex-col pb-4 px-1">
         <ScrollArea className="flex-1 w-full overflow-y-auto">
           {messages.length > 10 && count.page < count.totalPages ? (
             <Button
