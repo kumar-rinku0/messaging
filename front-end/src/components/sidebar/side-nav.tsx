@@ -1,5 +1,5 @@
 import React, { Fragment, useEffect } from "react";
-import { Link, useLocation } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import type { MessageType, UserType } from "@/types/api-types";
 import socket from "@/services/socket";
 import { Button } from "../ui/button";
@@ -16,11 +16,13 @@ import { useData } from "@/hooks/use-data";
 const chatTypes = ["private", "group", "all"];
 
 export default function SideNav() {
-  const { logout } = useAuth();
+  const router = useNavigate();
+  const isMobile = useIsMobile();
+  const { authInfo, logout } = useAuth();
+  if (!authInfo) return;
   const { chats } = useData();
+  if (!chats) return null;
   const [currType, setCurrentType] = React.useState(chatTypes[0]);
-  const auth_user_token = localStorage.getItem("auth_user") || "";
-  const auth_user = JSON.parse(auth_user_token) as UserType;
 
   const pathname = useLocation().pathname;
   function isNavItemActive(pathname: string, path: string) {
@@ -40,7 +42,9 @@ export default function SideNav() {
   useEffect(() => {
     const getOnlineUsers = (users: UserType[]) => {
       console.log("Online users from socket:", users);
-      const filtered = users.filter((user) => user._id !== auth_user._id);
+      const filtered = users.filter(
+        (user) => user._id !== authInfo.auth_user._id,
+      );
       setOnlineUsers(filtered);
     };
 
@@ -69,12 +73,9 @@ export default function SideNav() {
 
   const handleLogout = async () => {
     await logout();
+    router("/");
   };
 
-  const isMobile = useIsMobile();
-  if (!chats) {
-    return <div>NO Chats Found.</div>;
-  }
   return (
     <div className="w-16 md:w-80 h-screen">
       <div className="border-r border-r-neutral-200 dark:border-r-neutral-800 transition-all duration-300 ease-in-out transform flex h-full bg-neutral-50 dark:bg-primary/50">

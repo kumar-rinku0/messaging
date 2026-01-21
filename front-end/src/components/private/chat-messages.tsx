@@ -8,7 +8,7 @@ import socket from "@/services/socket";
 import { useParams, useNavigate } from "react-router";
 import { ScrollArea } from "../ui/scroll-area";
 import { Button } from "../ui/button";
-import { useData } from "@/hooks/use-data";
+// import { useData } from "@/hooks/use-data";
 
 type ResponseType = {
   messages: MessageType[];
@@ -26,7 +26,7 @@ const transitionDebug = {
 
 const ChatMessages = () => {
   const router = useNavigate();
-  const { resetChatNotifications } = useData();
+  // const { resetChatNotifications } = useData();
   const { chatId } = useParams<{ chatId: string }>();
   const [messages, setMessages] = React.useState<MessageType[]>([]);
   const [count, setCount] = React.useState<{
@@ -73,12 +73,12 @@ const ChatMessages = () => {
     fetchChatMessages(1);
     socket.emit("join-chat", chatId);
     socket.on("msg", onChatMessage);
-    resetChatNotifications(chatId);
+    // resetChatNotifications(chatId);
     return () => {
       setMessages([]);
       socket.emit("leave-chat", chatId);
       socket.off("msg", onChatMessage);
-      resetChatNotifications(chatId);
+      // resetChatNotifications(chatId);
     };
   }, [chatId]);
 

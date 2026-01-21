@@ -4,12 +4,20 @@ import { Outlet } from "react-router";
 import SideNav from "./sidebar/side-nav";
 import socket from "@/services/socket";
 import { Toaster } from "./ui/sonner";
-import type { UserType } from "@/types/api-types";
+import { useAuth } from "@/hooks/use-auth";
+import { useData } from "@/hooks/use-data";
 
 const Header = () => {
-  const auth_user_token = localStorage.getItem("auth_user") || "";
-  const auth_user = JSON.parse(auth_user_token) as UserType;
-  socket.auth = { userId: auth_user._id };
+  const { isLoading, authInfo } = useAuth();
+  const { dataState } = useData();
+  if (isLoading || !authInfo || dataState.loading) {
+    return <div>Loading...</div>;
+  }
+  if (dataState.error) {
+    return <div>{dataState.error}</div>;
+  }
+
+  socket.auth = { userId: authInfo.auth_user._id };
   socket.connect();
   return (
     <>
