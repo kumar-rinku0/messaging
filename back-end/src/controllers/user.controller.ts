@@ -23,7 +23,7 @@ const handleUserRegistration = async (req: Request, res: Response) => {
   };
   const auth_token = setUser(user);
   res.status(201).json({
-    message: "User registered successfully",
+    message: "user registered successfully",
     userId: newUser._id,
     user: user,
     auth_token,
@@ -36,11 +36,11 @@ const handleUserLogin = async (req: Request, res: Response) => {
   const { username, password, client } = req.body;
   const user = await User.findOne({ username });
   if (!user) {
-    return res.status(404).json({ message: "User not found", ok: false });
+    return res.status(404).json({ message: "user not found", ok: false });
   }
   const isRightPassword = verifyPassword(password, user.password);
   if (!isRightPassword) {
-    return res.status(401).json({ message: "Invalid password", ok: false });
+    return res.status(401).json({ message: "invalid password", ok: false });
   }
   let session_id = null;
   if (client) {
@@ -78,7 +78,7 @@ const handleUserLogout = async (req: Request, res: Response) => {
 };
 
 const handleGetAllUsers = async (req: Request, res: Response) => {
-  const users = await User.find({}).select("-password -email -__v");
+  const users = await User.find({}).select("-password -email -__v").lean();
   return res.status(200).json({ users: users, ok: true });
 };
 
@@ -87,7 +87,9 @@ const handleGetSearchedUser = async (req: Request, res: Response) => {
   const users = await User.find({
     username: { $regex: q, $options: "i" },
     _id: { $ne: user },
-  }).select("-password -email -__v");
+  })
+    .select("-password -email -__v")
+    .lean();
   return res.status(200).json({ users: users, ok: true });
 };
 

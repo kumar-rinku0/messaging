@@ -48,14 +48,32 @@ const handleCreateGroupChat = async (req: Request, res: Response) => {
 const handleGetChatById = async (req: Request, res: Response) => {
   const { chatId } = req.params;
 
-  const chat = await Chat.findById(chatId).populate("members");
+  const chat = await Chat.findById(chatId)
+    .select("-notification -lastMessage")
+    .populate("members", "username email avatar")
+    .lean();
   if (!chat) {
-    return res.status(404).json({ message: "Chat not found", ok: false });
+    return res.status(404).json({ message: "chat not found", ok: false });
   }
+  const userId = req.user._id as string;
+  const members = chat.members as any[];
+  const updatedChat = {
+    ...chat,
+    displayName:
+      chat.type === "group"
+        ? chat.name
+        : members.find((m: any) => m._id.toString() !== userId)?.username,
+    displayAvatar:
+      chat.type === "group"
+        ? chat.avatar
+        : members.find((m: any) => m._id.toString() !== userId)?.avatar,
+  };
 
-  return res
-    .status(200)
-    .json({ chat, ok: true, message: "chat is not formated to display name." });
+  return res.status(200).json({
+    chat: updatedChat,
+    ok: true,
+    message: "chat is formated to display name & avatar.",
+  });
 };
 
 const handleGetPrivateChats = async (req: Request, res: Response) => {
