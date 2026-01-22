@@ -3,11 +3,12 @@ import type { ChatType, MessageType, UserType } from "@/types/api-types";
 import React, { useEffect, useRef } from "react";
 import { motion } from "motion/react";
 import { easeOut } from "motion"; // Add this import at the top with other imports
-import { ArrowLeft, SendHorizonal } from "lucide-react";
+import { MoreVertical, SendHorizonal } from "lucide-react";
 import socket from "@/services/socket";
-import { useParams, useNavigate } from "react-router";
+import { useParams } from "react-router";
 import { ScrollArea } from "../ui/scroll-area";
 import { Button } from "../ui/button";
+import { useData } from "@/hooks/use-data";
 // import { useData } from "@/hooks/use-data";
 
 type ResponseType = {
@@ -25,8 +26,7 @@ const transitionDebug = {
 };
 
 const ChatMessages = () => {
-  const router = useNavigate();
-  // const { resetChatNotifications } = useData();
+  const { resetChatNotifications } = useData();
   const { chatId } = useParams<{ chatId: string }>();
   const [messages, setMessages] = React.useState<MessageType[]>([]);
   const [count, setCount] = React.useState<{
@@ -73,12 +73,13 @@ const ChatMessages = () => {
     fetchChatMessages(1);
     socket.emit("join-chat", chatId);
     socket.on("msg", onChatMessage);
-    // resetChatNotifications(chatId);
+    resetChatNotifications(chatId);
     return () => {
       setMessages([]);
+      setChat(null);
       socket.emit("leave-chat", chatId);
       socket.off("msg", onChatMessage);
-      // resetChatNotifications(chatId);
+      resetChatNotifications(chatId);
     };
   }, [chatId]);
 
@@ -122,15 +123,9 @@ const ChatMessages = () => {
 
   return (
     <div className="h-[100vh]">
-      <div className="h-14 px-2 flex items-center bg-white border-b border-b-gray-200">
-        <ArrowLeft
-          className="mr-4 inline h-5 w-5 cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-50"
-          onClick={() => {
-            router("/");
-          }}
-        />
-        <div className="flex flex-1 items-center gap-2">
-          <div className="relative w-12 h-12">
+      <div className="h-14 px-2 flex justify-between items-center border-b border-b-gray-200">
+        <div className="flex flex-1 items-center gap-2 px-4">
+          {/* <div className="relative w-12 h-12">
             <img
               src={
                 chat?.displayAvatar ||
@@ -139,12 +134,15 @@ const ChatMessages = () => {
               alt=""
               className="object-cover w-12 h-12 rounded-full"
             />
-          </div>
+          </div> */}
           <span className="font-semibold">{chat?.displayName}</span>
+        </div>
+        <div>
+          <MoreVertical />
         </div>
       </div>
       {/* <div className="flex h-[calc(100vh-40px)] flex-col items-end justify-end pb-4 px-1"> */}
-      <div className="flex h-[calc(100vh-3.5rem)] flex-col pb-4 px-1">
+      <div className="flex h-[calc(100vh-3.5rem)] flex-col">
         <ScrollArea className="flex-1 w-full overflow-y-auto">
           {messages.length > 10 && count.page < count.totalPages ? (
             <Button
@@ -180,39 +178,42 @@ const ChatMessages = () => {
 
         {/* </div> */}
 
-        <div className="flex w-full">
-          <form onSubmit={handleSubmit} className="flex w-full">
-            <input
-              type="text"
-              onChange={(e) => setMsg(e.target.value)}
-              value={msg}
-              className="relative h-9 w-[250px] flex-grow rounded-full border border-gray-200 bg-white px-3 text-[15px] outline-none placeholder:text-gray-400 focus-visible:ring-0 focus-visible:ring-blue-500/20 focus-visible:ring-offset-1
+        {/* <div className="flex w-full"> */}
+        <form
+          onSubmit={handleSubmit}
+          className="h-12 flex justify-center items-center w-full bg-accent dark:bg-accent-foreground px-1 border-t border-t-neutral-200 dark:border-t-neutral-800"
+        >
+          <input
+            type="text"
+            onChange={(e) => setMsg(e.target.value)}
+            value={msg}
+            className="relative h-9 w-[250px] flex-grow rounded-lg border border-gray-200 bg-white px-3 text-[15px] outline-none placeholder:text-gray-400 focus-visible:ring-0 focus-visible:ring-blue-500/20 focus-visible:ring-offset-1
             dark:border-black/60 dark:bg-black dark:text-gray-50 dark:placeholder-gray-500 dark:focus-visible:ring-blue-500/20 dark:focus-visible:ring-offset-1 dark:focus-visible:ring-offset-gray-700"
-              placeholder="Type your message"
-            />
-            <motion.div
-              key={messages.length}
-              layout="position"
-              className="pointer-events-none absolute z-10 flex h-9 w-[250px] items-center overflow-hidden break-words rounded-full bg-gray-200 [word-break:break-word] dark:bg-black"
-              layoutId={`container-[${messages.length}]`}
-              initial={{ opacity: 0.6, zIndex: -1 }}
-              animate={{ opacity: 0.6, zIndex: -1 }}
-              exit={{ opacity: 1, zIndex: 1 }}
-              transition={transitionDebug}
-            >
-              <div className="px-3 py-2 text-[15px] leading-[15px] text-gray-900 dark:text-gray-50">
-                {msg || "Type your message"}
-              </div>
-            </motion.div>
-            <button
-              type="submit"
-              className="ml-2 flex h-9 w-9 items-center justify-center rounded-full bg-gray-200
+            placeholder="Type your message"
+          />
+          <motion.div
+            key={messages.length}
+            layout="position"
+            className="pointer-events-none absolute z-10 flex h-9 w-[250px] items-center overflow-hidden break-words rounded-full bg-gray-200 [word-break:break-word] dark:bg-black"
+            layoutId={`container-[${messages.length}]`}
+            initial={{ opacity: 0.6, zIndex: -1 }}
+            animate={{ opacity: 0.6, zIndex: -1 }}
+            exit={{ opacity: 1, zIndex: 1 }}
+            transition={transitionDebug}
+          >
+            <div className="px-3 py-2 text-[15px] leading-[15px] text-gray-900 dark:text-gray-50">
+              {msg || "Type your message"}
+            </div>
+          </motion.div>
+          <button
+            type="submit"
+            className="ml-2 flex h-9 w-9 items-center justify-center rounded-full bg-gray-200
             dark:bg-black"
-            >
-              <SendHorizonal className="h-5 w-5 text-gray-600 dark:text-gray-50" />
-            </button>
-          </form>
-        </div>
+          >
+            <SendHorizonal className="h-5 w-5 text-gray-600 dark:text-gray-50" />
+          </button>
+        </form>
+        {/* </div> */}
       </div>
     </div>
   );

@@ -9,6 +9,7 @@ export type MessageType = {
 export type UserType = {
   username: string;
   _id: string;
+  avatar: string;
 };
 
 export type ChatType = {

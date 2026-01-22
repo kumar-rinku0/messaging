@@ -2,7 +2,7 @@ import React, { Fragment } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import { Button } from "../ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { LogOut, MessageCircleMore } from "lucide-react";
+import { LogOut, MessageCircleMore, UserPlus } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useData } from "@/hooks/use-data";
 // import {
@@ -34,32 +34,36 @@ export default function SideNav() {
   return (
     <div className="w-16 md:w-80 h-screen">
       <div className="border-r border-r-neutral-200 dark:border-r-neutral-800 transition-all duration-300 ease-in-out transform flex h-full bg-neutral-50 dark:bg-primary/50">
-        <aside className="flex h-full flex-col w-full break-words px-1 md:px-4 overflow-x-hidden columns-1">
+        <aside className="flex h-full flex-col w-full break-words overflow-x-hidden columns-1">
           {/* Top */}
-          <Link to="/" className="flex items-center space-x-2 p-2">
+          <Link
+            to="/"
+            className="h-14 px-2 flex justify-between items-center bg-slate-200 dark:bg-slate-800 border-b border-b-neutral-200 dark:border-b-neutral-800"
+          >
             <span className="font-semibold">
               {isMobile ? <MessageCircleMore size={40} /> : "Messaging"}
             </span>
+            <span>{isMobile ? null : <UserPlus />}</span>
           </Link>
-          <div>
-            <span className="font-semibold">
-              {!isMobile && (
-                <div className="flex gap-1">
-                  {chatTypes.map((chatType) => (
-                    <Button
-                      key={chatType}
-                      variant="outline"
-                      className={currType === chatType ? "bg-green-500" : ""}
-                      onClick={() => setCurrentType(chatType)}
-                    >
-                      {chatType}
-                    </Button>
-                  ))}
-                </div>
-              )}
-            </span>
-          </div>
-          <div className="mt-4 relative pb-2">
+          {/* <div>
+            <span className="font-semibold"> */}
+          {!isMobile && (
+            <div className="flex gap-1 px-1 mt-2 mb-1">
+              {chatTypes.map((chatType) => (
+                <Button
+                  key={chatType}
+                  variant="outline"
+                  className={currType === chatType ? "bg-gray-300" : ""}
+                  onClick={() => setCurrentType(chatType)}
+                >
+                  {chatType}
+                </Button>
+              ))}
+            </div>
+          )}
+          {/* </span>
+          </div> */}
+          <div className="relative pb-2">
             <div className={`flex flex-col transition-all duration-200`}>
               {chats
                 .filter((chat) => {
@@ -93,7 +97,7 @@ export default function SideNav() {
                   }
                   return (
                     <Fragment key={chat._id}>
-                      <div className="flex flex-col my-1">
+                      <div className="flex flex-col my-1 px-1">
                         <SideNavItem
                           label={chat.displayName}
                           avatar={chat.displayAvatar}
@@ -111,18 +115,32 @@ export default function SideNav() {
             </div>
           </div>
           {/* Bottom */}
-          <div className="sticky bottom-0 mt-auto whitespace-nowrap mb-2 transition duration-200 block">
-            <Button
-              variant={"outline"}
-              onClick={handleLogout}
-              className={`h-full w-full relative flex items-center whitespace-nowrap rounded-mdhover:bg-neutral-200 hover:text-neutral-700 text-neutral-500 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white`}
-            >
-              <div className="relative font-base text-sm px-1 flex flex-row items-center space-x-2 rounded-md duration-100">
+          <div className="h-12 sticky bottom-0 mt-auto whitespace-nowrap transition duration-200 flex items-center justify-between gap-2 px-2 bg-accent dark:bg-accent-foreground border-t border-t-neutral-200 dark:border-t-neutral-800">
+            {isMobile ? null : (
+              <div className="flex items-center gap-2">
+                <div>
+                  <img
+                    src={authInfo.auth_user?.avatar}
+                    alt=""
+                    className="w-8 h-8 rounded-full"
+                  />
+                </div>
                 <span className="font-medium">
-                  {isMobile ? <LogOut /> : "Logout"}
+                  {authInfo.auth_user?.username}
                 </span>
               </div>
-            </Button>
+            )}
+            <div className="relative font-base text-sm px-1 flex flex-row items-center space-x-2 rounded-md duration-100">
+              <Button
+                variant={"outline"}
+                onClick={handleLogout}
+                className={`h-8 w-8 relative flex items-center whitespace-nowrap rounded-mdhover:bg-neutral-200 hover:text-neutral-700 text-neutral-500 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white`}
+              >
+                <span className="font-medium">
+                  <LogOut />
+                </span>
+              </Button>
+            </div>
           </div>
         </aside>
       </div>
