@@ -142,6 +142,20 @@ const handleGetAllTypeChats = async (req: Request, res: Response) => {
   return res.status(200).json({ chats: formattedChats, ok: true });
 };
 
+const handleUpdateChatById = async (req: Request, res: Response) => {
+  const { chatId } = req.params;
+  const { name, avatar } = req.body;
+  const updatedChat = await Chat.findByIdAndUpdate(
+    chatId,
+    { name, avatar },
+    { new: true },
+  );
+  if (!updatedChat) {
+    return res.status(404).json({ message: "chat not found", ok: false });
+  }
+  return res.status(200).json({ chat: updatedChat, ok: true });
+};
+
 export {
   handleCreatePrivateChat,
   handleCreateGroupChat,
@@ -149,4 +163,5 @@ export {
   handleGetPrivateChats,
   handleGetGroupChats,
   handleGetAllTypeChats,
+  handleUpdateChatById,
 };
