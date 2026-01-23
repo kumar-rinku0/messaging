@@ -1,6 +1,6 @@
 import { Expo } from "expo-server-sdk";
 import { Types } from "mongoose";
-import User, { Session } from "@/models/user.model";
+import { Session } from "@/models/user.model";
 import { config } from "dotenv";
 config();
 
@@ -13,6 +13,7 @@ interface PushNotification {
   sound: "default" | "none";
   title: string;
   body: string;
+  channelId?: string;
   data: {
     chatId: Types.ObjectId | string;
     messageId: Types.ObjectId | string;
@@ -52,6 +53,7 @@ export const createNotifications = async (
           sound: "default",
           title: senderName,
           body: message.msg,
+          channelId: "chat-message",
           data: {
             chatId: message.chatId,
             messageId: message._id,
