@@ -21,7 +21,7 @@ interface PushNotification {
 
 interface MessagePayload {
   _id: Types.ObjectId | string;
-  chat: Types.ObjectId | string;
+  chatId: Types.ObjectId | string;
   sender: Types.ObjectId | string; // sender name
   msg: string;
 }
@@ -53,7 +53,7 @@ export const createNotifications = async (
           title: senderName,
           body: message.msg,
           data: {
-            chatId: message.chat,
+            chatId: message.chatId,
             messageId: message._id,
           },
         });

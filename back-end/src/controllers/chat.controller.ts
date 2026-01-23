@@ -153,7 +153,9 @@ const handleUpdateChatById = async (req: Request, res: Response) => {
   if (!updatedChat) {
     return res.status(404).json({ message: "chat not found", ok: false });
   }
-  return res.status(200).json({ chat: updatedChat, ok: true });
+  return res
+    .status(200)
+    .json({ chat: updatedChat, ok: true, message: "chat updated." });
 };
 
 export {
