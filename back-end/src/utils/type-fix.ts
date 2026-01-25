@@ -44,7 +44,7 @@ export const getMembersFromChat = async (chatId: string, userId: string) => {
 };
 
 export const getChat = async (chatId: string) => {
-  const chat = await Chat.findById(chatId);
+  const chat = await Chat.findById(chatId).lean();
   if (!chat) return null;
   return chat;
 };
