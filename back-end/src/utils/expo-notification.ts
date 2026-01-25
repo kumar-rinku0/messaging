@@ -19,6 +19,7 @@ interface PushNotification {
   data: {
     chatId: Types.ObjectId | string;
     messageId: Types.ObjectId | string;
+    message: MessagePayload;
   };
 }
 
@@ -43,7 +44,7 @@ export const createNotifications = async (
   const notifications: PushNotification[] = [];
   const chat = await getChat(message.chatId.toString());
   const messageBody =
-    chat?.type === "group" ? `${chat.name}: ${message.msg}` : message.msg;
+    chat?.type === "group" ? `${chat.name} : ${message.msg}` : message.msg;
   // Loop sequentially over members
   for (const m of members) {
     const sessions = await Session.find({
@@ -65,6 +66,7 @@ export const createNotifications = async (
           data: {
             chatId: message.chatId,
             messageId: message._id,
+            message: message,
           },
         });
       }
