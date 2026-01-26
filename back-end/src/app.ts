@@ -31,6 +31,7 @@ const server = createServer(app);
 const io = new Server(server, {
   cors: { origin: DOMAIN_URL, methods: ["GET", "POST"] },
   path: "/api/socket.io",
+  connectionStateRecovery: {},
 });
 
 mongoose
