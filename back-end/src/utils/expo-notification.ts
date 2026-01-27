@@ -16,9 +16,14 @@ interface PushNotification {
   body: string;
   channelId?: string;
   badge?: number;
+  threadId?: string;
+  collapseId?: string;
   data: {
+    chatType: string;
     chatId: Types.ObjectId | string;
     messageId: Types.ObjectId | string;
+    senderId: Types.ObjectId | string;
+    senderName: string;
   };
 }
 
@@ -41,7 +46,8 @@ export const createNotifications = async (
   senderName: string,
 ) => {
   const notifications: PushNotification[] = [];
-  // const chat = await getChat(message.chatId.toString());
+  const chat = await getChat(message.chatId.toString());
+  if (!chat) return;
   // Loop sequentially over members
   for (const m of members) {
     const sessions = await Session.find({
@@ -56,9 +62,14 @@ export const createNotifications = async (
           title: senderName,
           body: message.msg,
           channelId: "chat-message",
+          threadId: message.chatId.toString(),
+          collapseId: message.chatId.toString(),
           data: {
+            chatType: chat.type,
             chatId: message.chatId,
             messageId: message._id,
+            senderId: message.sender,
+            senderName: senderName,
           },
         });
       }
