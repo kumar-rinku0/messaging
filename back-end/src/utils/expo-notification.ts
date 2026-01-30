@@ -16,10 +16,14 @@ interface PushNotification {
   body: string;
   channelId?: string;
   badge?: number;
+  threadId?: string;
+  collapseId?: string;
   data: {
+    chatType: string;
     chatId: Types.ObjectId | string;
     messageId: Types.ObjectId | string;
-    message: MessagePayload;
+    senderId: Types.ObjectId | string;
+    senderName: string;
   };
 }
 
@@ -43,30 +47,29 @@ export const createNotifications = async (
 ) => {
   const notifications: PushNotification[] = [];
   const chat = await getChat(message.chatId.toString());
-  const messageBody =
-    chat?.type === "group" ? `${chat.name} : ${message.msg}` : message.msg;
+  if (!chat) return;
   // Loop sequentially over members
   for (const m of members) {
     const sessions = await Session.find({
       userId: m,
       token: { $exists: true, $ne: null },
     }).select("os token");
-    const notificationCount = chat?.notification.find(
-      (n: any) => n.userId.toString() === m.toString(),
-    )?.count;
     for (const session of sessions) {
       if (!!session.token && Expo.isExpoPushToken(session.token)) {
         notifications.push({
           to: session.token,
           sound: "default",
           title: senderName,
-          body: messageBody,
+          body: message.msg,
           channelId: "chat-message",
-          badge: notificationCount ? notificationCount : 0,
+          threadId: message.chatId.toString(),
+          collapseId: message.chatId.toString(),
           data: {
+            chatType: chat.type,
             chatId: message.chatId,
             messageId: message._id,
-            message: message,
+            senderId: message.sender,
+            senderName: senderName,
           },
         });
       }
