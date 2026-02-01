@@ -9,7 +9,6 @@ import { useParams } from "react-router";
 import { ScrollArea } from "../ui/scroll-area";
 import { Button } from "../ui/button";
 import { useData } from "@/hooks/use-data";
-// import { useData } from "@/hooks/use-data";
 
 type ResponseType = {
   messages: MessageType[];
