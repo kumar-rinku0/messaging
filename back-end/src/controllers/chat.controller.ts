@@ -158,6 +158,15 @@ const handleUpdateChatById = async (req: Request, res: Response) => {
     .json({ chat: updatedChat, ok: true, message: "chat updated." });
 };
 
+const handleDeleteChatById = async (req: Request, res: Response) => {
+  const { chatId } = req.params;
+  const chat = await Chat.findByIdAndDelete(chatId);
+  if (!chat) {
+    return res.status(400).json({ ok: false, message: "chat id invalid." });
+  }
+  return res.status(200).json({ ok: true, message: "chat deleted." });
+};
+
 export {
   handleCreatePrivateChat,
   handleCreateGroupChat,
@@ -166,4 +175,5 @@ export {
   handleGetGroupChats,
   handleGetAllTypeChats,
   handleUpdateChatById,
+  handleDeleteChatById,
 };
