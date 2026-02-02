@@ -160,7 +160,7 @@ const handleUpdateChatById = async (req: Request, res: Response) => {
 
 const handleDeleteChatById = async (req: Request, res: Response) => {
   const { chatId } = req.params;
-  const chat = await Chat.findByIdAndDelete(chatId);
+  const chat = await Chat.findOneAndDelete({ _id: chatId });
   if (!chat) {
     return res.status(400).json({ ok: false, message: "chat id invalid." });
   }
