@@ -127,6 +127,10 @@ const ChatMessages = () => {
     return <div>Loading...</div>;
   }
 
+  const setMessagesNULL = () => {
+    setMessages([]);
+  };
+
   return (
     <div className="h-[100vh]">
       <div className="h-14 px-2 flex justify-between items-center border-b border-b-gray-200">
@@ -143,7 +147,7 @@ const ChatMessages = () => {
           </div> */}
           <span className="font-semibold">{chat?.displayName}</span>
         </div>
-        <MoreOptions chatId={chatId!} />
+        <MoreOptions chatId={chatId!} setMessagesNULL={setMessagesNULL} />
       </div>
       {/* <div className="flex h-[calc(100vh-40px)] flex-col items-end justify-end pb-4 px-1"> */}
       <div className="flex h-[calc(100vh-3.5rem)] flex-col">
@@ -228,7 +232,18 @@ type ResponseTypeDeleteChat = {
   ok: boolean;
 };
 
-const MoreOptions = ({ chatId }: { chatId: string }) => {
+type ResponseTypeDeleteMsg = {
+  message: string;
+  ok: boolean;
+};
+
+const MoreOptions = ({
+  chatId,
+  setMessagesNULL,
+}: {
+  chatId: string;
+  setMessagesNULL: () => void;
+}) => {
   const router = useNavigate();
   const { removeOneChat } = useData();
   const handleDeleteChat = () => {
@@ -242,6 +257,18 @@ const MoreOptions = ({ chatId }: { chatId: string }) => {
       toast.success(res.data.message);
     });
   };
+  const handleClearMessages = () => {
+    api
+      .delete<ResponseTypeDeleteMsg>(`/msg/all/chatId/${chatId}`)
+      .then((res) => {
+        if (!res.data.ok) {
+          toast.error(res.data.message);
+          return;
+        }
+        setMessagesNULL();
+        toast.success(res.data.message);
+      });
+  };
   return (
     <Popover>
       <PopoverTrigger>
@@ -249,8 +276,18 @@ const MoreOptions = ({ chatId }: { chatId: string }) => {
       </PopoverTrigger>
       <PopoverContent align="end" className="w-40">
         <PopoverHeader>
-          <Button variant="ghost">Clear Messages</Button>
-          <Button variant="ghost" onClick={handleDeleteChat}>
+          <Button
+            variant="link"
+            className="justify-start cursor-pointer"
+            onClick={handleClearMessages}
+          >
+            Clear Messages
+          </Button>
+          <Button
+            variant="link"
+            onClick={handleDeleteChat}
+            className="justify-start cursor-pointer"
+          >
             Delete Chat
           </Button>
         </PopoverHeader>
