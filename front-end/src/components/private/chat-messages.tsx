@@ -5,10 +5,17 @@ import { motion } from "motion/react";
 import { easeOut } from "motion"; // Add this import at the top with other imports
 import { MoreVertical, SendHorizonal } from "lucide-react";
 import socket from "@/services/socket";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { ScrollArea } from "../ui/scroll-area";
 import { Button } from "../ui/button";
 import { useData } from "@/hooks/use-data";
+import {
+  Popover,
+  PopoverContent,
+  PopoverHeader,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { toast } from "sonner";
 
 type ResponseType = {
   messages: MessageType[];
@@ -136,9 +143,7 @@ const ChatMessages = () => {
           </div> */}
           <span className="font-semibold">{chat?.displayName}</span>
         </div>
-        <div>
-          <MoreVertical />
-        </div>
+        <MoreOptions chatId={chatId!} />
       </div>
       {/* <div className="flex h-[calc(100vh-40px)] flex-col items-end justify-end pb-4 px-1"> */}
       <div className="flex h-[calc(100vh-3.5rem)] flex-col">
@@ -215,6 +220,42 @@ const ChatMessages = () => {
         {/* </div> */}
       </div>
     </div>
+  );
+};
+
+type ResponseTypeDeleteChat = {
+  message: string;
+  ok: boolean;
+};
+
+const MoreOptions = ({ chatId }: { chatId: string }) => {
+  const router = useNavigate();
+  const { removeOneChat } = useData();
+  const handleDeleteChat = () => {
+    api.delete<ResponseTypeDeleteChat>(`/chat/chatId/${chatId}`).then((res) => {
+      if (!res.data.ok) {
+        toast.error(res.data.message);
+        return;
+      }
+      removeOneChat(chatId);
+      router("/");
+      toast.success(res.data.message);
+    });
+  };
+  return (
+    <Popover>
+      <PopoverTrigger>
+        <MoreVertical />
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-40">
+        <PopoverHeader>
+          <Button variant="ghost">Clear Messages</Button>
+          <Button variant="ghost" onClick={handleDeleteChat}>
+            Delete Chat
+          </Button>
+        </PopoverHeader>
+      </PopoverContent>
+    </Popover>
   );
 };
 

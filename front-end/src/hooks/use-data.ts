@@ -9,6 +9,7 @@ type AppDataContextType = {
   dataState: DataStateType;
   chats: ChatType[] | null;
   addNewChat: (newChat: ChatType) => void;
+  removeOneChat: (chatId: string) => void;
   resetChatNotifications: (chatId: string) => void;
   updateChatLastMessage: (
     chatId: string,
@@ -98,6 +99,16 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
     setChats((prev) => [newChat, ...(prev ?? [])]);
   };
 
+  const removeOneChat = (chatId: string) => {
+    setChats((prev) => {
+      if (!prev) {
+        return [];
+      } else {
+        return prev.filter((chat) => chat._id !== chatId);
+      }
+    });
+  };
+
   const updateChatLastMessage = (
     chatId: string,
     message: MessageType,
@@ -141,6 +152,7 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
         chats,
         dataState,
         addNewChat,
+        removeOneChat,
         resetChatNotifications,
         updateChatLastMessage,
       },
