@@ -5,10 +5,17 @@ import { motion } from "motion/react";
 import { easeOut } from "motion"; // Add this import at the top with other imports
 import { MoreVertical, SendHorizonal } from "lucide-react";
 import socket from "@/services/socket";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { ScrollArea } from "../ui/scroll-area";
 import { Button } from "../ui/button";
 import { useData } from "@/hooks/use-data";
+import {
+  Popover,
+  PopoverContent,
+  PopoverHeader,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { toast } from "sonner";
 
 type ResponseType = {
   messages: MessageType[];
@@ -120,6 +127,10 @@ const ChatMessages = () => {
     return <div>Loading...</div>;
   }
 
+  const setMessagesNULL = () => {
+    setMessages([]);
+  };
+
   return (
     <div className="h-[100vh]">
       <div className="h-14 px-2 flex justify-between items-center border-b border-b-gray-200">
@@ -136,9 +147,7 @@ const ChatMessages = () => {
           </div> */}
           <span className="font-semibold">{chat?.displayName}</span>
         </div>
-        <div>
-          <MoreVertical />
-        </div>
+        <MoreOptions chatId={chatId!} setMessagesNULL={setMessagesNULL} />
       </div>
       {/* <div className="flex h-[calc(100vh-40px)] flex-col items-end justify-end pb-4 px-1"> */}
       <div className="flex h-[calc(100vh-3.5rem)] flex-col">
@@ -215,6 +224,75 @@ const ChatMessages = () => {
         {/* </div> */}
       </div>
     </div>
+  );
+};
+
+type ResponseTypeDeleteChat = {
+  message: string;
+  ok: boolean;
+};
+
+type ResponseTypeDeleteMsg = {
+  message: string;
+  ok: boolean;
+};
+
+const MoreOptions = ({
+  chatId,
+  setMessagesNULL,
+}: {
+  chatId: string;
+  setMessagesNULL: () => void;
+}) => {
+  const router = useNavigate();
+  const { removeOneChat } = useData();
+  const handleDeleteChat = () => {
+    api.delete<ResponseTypeDeleteChat>(`/chat/chatId/${chatId}`).then((res) => {
+      if (!res.data.ok) {
+        toast.error(res.data.message);
+        return;
+      }
+      removeOneChat(chatId);
+      router("/");
+      toast.success(res.data.message);
+    });
+  };
+  const handleClearMessages = () => {
+    api
+      .delete<ResponseTypeDeleteMsg>(`/msg/all/chatId/${chatId}`)
+      .then((res) => {
+        if (!res.data.ok) {
+          toast.error(res.data.message);
+          return;
+        }
+        setMessagesNULL();
+        toast.success(res.data.message);
+      });
+  };
+  return (
+    <Popover>
+      <PopoverTrigger>
+        <MoreVertical />
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-40">
+        <PopoverHeader>
+          <Button
+            variant="link"
+            className="justify-start cursor-pointer"
+            onClick={handleClearMessages}
+          >
+            Clear Messages
+          </Button>
+          <Button
+            variant="link"
+            onClick={handleDeleteChat}
+            className="justify-start cursor-pointer"
+          >
+            Delete Chat
+          </Button>
+        </PopoverHeader>
+      </PopoverContent>
+    </Popover>
   );
 };
 

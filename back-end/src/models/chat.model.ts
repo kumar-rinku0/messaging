@@ -75,6 +75,15 @@ chatSchema.pre("save", function (next) {
   next();
 });
 
+chatSchema.pre("findOneAndDelete", async function (next) {
+  const { _id } = this.getQuery();
+  const Message = model("Message");
+  const doc = await Message.deleteMany({ chatId: _id });
+  console.log(doc);
+
+  next();
+});
+
 const Chat = model("Chat", chatSchema);
 
 export default Chat;
