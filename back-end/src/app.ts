@@ -91,7 +91,6 @@ io.on("connection", async (socket: Socket) => {
       { chatId, userId }: { chatId: string; userId: string },
       msg: any,
     ) => {
-      socket.join(chatId);
       socket.to(chatId).emit("msg", msg);
       await updateNotificationCount({ pos: "inc", chatId, userId });
       const membersExceptSender = await getMembersFromChat(chatId, userId);
