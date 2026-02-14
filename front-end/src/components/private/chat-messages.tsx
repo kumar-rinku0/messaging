@@ -32,8 +32,10 @@ const transitionDebug = {
 };
 
 const ChatMessages = () => {
-  const { resetChatNotifications } = useData();
   const { chatId } = useParams<{ chatId: string }>();
+  const { chats, resetChatNotifications } = useData();
+  const chat = chats?.find((c) => c._id === chatId);
+  if (!chat) return;
   const [messages, setMessages] = React.useState<MessageType[]>([]);
   const [count, setCount] = React.useState<{
     totalMessages: number;
@@ -41,7 +43,6 @@ const ChatMessages = () => {
     totalPages: number;
     limit: number;
   }>({ totalMessages: 0, page: 1, totalPages: 1, limit: 0 });
-  const [chat, setChat] = React.useState<ChatType | null>(null);
   const [msg, setMsg] = React.useState<string>("");
   const auth_user_token = localStorage.getItem("auth_user") || "";
   const auth_user = JSON.parse(auth_user_token) as UserType;
@@ -55,7 +56,6 @@ const ChatMessages = () => {
         const {
           messages: newMessages,
           totalMessages,
-          chat,
           totalPages,
           page,
           limit,
@@ -67,7 +67,6 @@ const ChatMessages = () => {
           setMessages(allMessages);
         }
         setCount({ totalMessages, page, totalPages, limit });
-        setChat(chat);
       });
   }
   useEffect(() => {
@@ -82,7 +81,6 @@ const ChatMessages = () => {
     resetChatNotifications(chatId);
     return () => {
       setMessages([]);
-      setChat(null);
       socket.emit("leave-chat", chatId);
       socket.off("msg", onChatMessage);
       resetChatNotifications(chatId);
@@ -123,12 +121,23 @@ const ChatMessages = () => {
     }
   }, [messages]);
 
-  if (!chat) {
-    return <div>Loading...</div>;
-  }
-
   const setMessagesNULL = () => {
     setMessages([]);
+  };
+
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleTyping = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setMsg(e.target.value);
+    socket.emit("typing", chatId, auth_user._id);
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    typingTimeoutRef.current = setTimeout(() => {
+      socket.emit("stop_typing", chatId, auth_user._id);
+    }, 1000);
   };
 
   return (
@@ -193,7 +202,7 @@ const ChatMessages = () => {
         >
           <input
             type="text"
-            onChange={(e) => setMsg(e.target.value)}
+            onChange={handleTyping}
             value={msg}
             className="relative h-9 w-[250px] flex-grow rounded-lg border border-gray-200 bg-white px-3 text-[15px] outline-none placeholder:text-gray-400 focus-visible:ring-0 focus-visible:ring-blue-500/20 focus-visible:ring-offset-1
             dark:border-black/60 dark:bg-black dark:text-gray-50 dark:placeholder-gray-500 dark:focus-visible:ring-blue-500/20 dark:focus-visible:ring-offset-1 dark:focus-visible:ring-offset-gray-700"
