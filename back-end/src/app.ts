@@ -15,9 +15,8 @@ import userRouter from "@/routes/user.route";
 import chatRouter from "@/routes/chat.route";
 import msgRouter from "@/routes/msg.route";
 import {
-  getChat,
   getMembersFromChat,
-  getOnlineUsers,
+  getOneOnlineUserUsername,
   updateNotificationCount,
 } from "./utils/type-fix";
 import { createNotifications } from "./utils/expo-notification";
@@ -67,17 +66,22 @@ server.listen(port, () => {
 
 // Socket.IO
 
-let onlineUsers = [] as { socketId: string; userId: string }[];
+let onlineUsers = [] as {
+  socketId: string;
+  userId: string;
+  username: string;
+}[];
 io.on("connection", async (socket: Socket) => {
-  const userId = socket.handshake.auth.userId;
-  if (!userId) return;
-  console.log("a user connected with ID:", userId);
-  !onlineUsers.some((user) => user.userId === userId) &&
-    onlineUsers.push({ socketId: socket.id, userId });
+  const userId = socket.handshake.auth.userId as string;
+  const username = await getOneOnlineUserUsername(userId);
+  if (!userId || !username) return;
+  console.log("a user connected:", username);
 
-  const filteredUsers = await getOnlineUsers(onlineUsers);
-  socket.emit("online-users", filteredUsers);
-  socket.broadcast.emit("online-users", filteredUsers);
+  !onlineUsers.some((user) => user.userId === userId) &&
+    onlineUsers.push({ socketId: socket.id, userId, username });
+
+  socket.emit("online-users", onlineUsers);
+  socket.broadcast.emit("online-users", onlineUsers);
 
   socket.on("join-chat", async (chatId) => {
     socket.join(chatId);
@@ -102,24 +106,44 @@ io.on("connection", async (socket: Socket) => {
           socket.except(chatId).emit("notification", msg);
         }
       });
-      const sender = filteredUsers.find((v) => v._id.toString() === userId);
-      const username = sender?.username || "new message";
+      // const sender = filteredUsers.find((v) => v._id.toString() === userId);
+      const username = "new message";
       await createNotifications(membersExceptSender, msg, username);
     },
   );
 
   // user typing status
-  socket.on("typing", (chatId, thisUser) => {
-    const user = onlineUsers.find((u) => u.userId === thisUser);
-    if (user) {
-      socket.to(chatId).emit("user_typing", thisUser);
+  socket.on("typing", async (chatId, thisUser) => {
+    // socket.to(chatId).emit("user_typing", { chatId: chatId, user: thisUser });
+    const membersExceptSender = await getMembersFromChat(chatId, thisUser);
+    for (const onlineUser of onlineUsers) {
+      if (
+        membersExceptSender.some(
+          (member) => member.toString() === onlineUser.userId,
+        )
+      ) {
+        socket
+          .to(onlineUser.socketId)
+          .emit("user_typing", { chatId: chatId, user: thisUser });
+      }
     }
   });
 
-  socket.on("stop_typing", (chatId, thisUser) => {
-    const user = onlineUsers.find((u) => u.userId === thisUser);
-    if (user) {
-      socket.to(chatId).emit("user_stop_typing", thisUser);
+  socket.on("stop_typing", async (chatId, thisUser) => {
+    // socket
+    //   .to(chatId)
+    //   .emit("user_stop_typing", { chatId: chatId, user: thisUser });
+    const membersExceptSender = await getMembersFromChat(chatId, thisUser);
+    for (const onlineUser of onlineUsers) {
+      if (
+        membersExceptSender.some(
+          (member) => member.toString() === onlineUser.userId,
+        )
+      ) {
+        socket
+          .to(onlineUser.socketId)
+          .emit("user_stop_typing", { chatId: chatId, user: thisUser });
+      }
     }
   });
 
@@ -131,9 +155,8 @@ io.on("connection", async (socket: Socket) => {
 
   socket.on("disconnect", async () => {
     onlineUsers = onlineUsers.filter((user) => user.socketId !== socket.id);
-    const filteredUsers = await getOnlineUsers(onlineUsers);
-    socket.emit("online-users", filteredUsers);
-    socket.broadcast.emit("online-users", filteredUsers);
+    socket.emit("online-users", onlineUsers);
+    socket.broadcast.emit("online-users", onlineUsers);
   });
 });
 
