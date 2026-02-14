@@ -11,6 +11,11 @@ type AppDataContextType = {
   addNewChat: (newChat: ChatType) => void;
   removeOneChat: (chatId: string) => void;
   resetChatNotifications: (chatId: string) => void;
+  updateChatMembersField: (
+    chatId: string,
+    value: string,
+    isTyping: boolean,
+  ) => void;
   updateChatLastMessage: (
     chatId: string,
     message: MessageType,
@@ -47,11 +52,23 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     socket.on("online-users", getOnlineUsers);
     socket.on("notification", onChatMessage);
+    socket.on(
+      "user_typing",
+      ({ chatId, user }: { chatId: string; user: string }) => {
+        updateChatMembersField(chatId, user, true);
+      },
+    );
 
     getChatsData();
     return () => {
       socket.off("online-users", getOnlineUsers);
       socket.off("notification", onChatMessage);
+      socket.on(
+        "user_stop_typing",
+        ({ chatId, user }: { chatId: string; user: string }) => {
+          updateChatMembersField(chatId, user, false);
+        },
+      );
     };
   }, []);
 
@@ -129,6 +146,36 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
     });
   };
 
+  const updateChatMembersField = (
+    chatId: string,
+    value: string,
+    isTyping: boolean,
+  ) => {
+    setChats((prevChats) => {
+      if (!prevChats) return prevChats;
+      return prevChats.map((chat) => {
+        if (chat._id === chatId) {
+          return {
+            ...chat,
+            members: chat.members.map((member) => {
+              if (member._id === value) {
+                return {
+                  ...member,
+                  typing: isTyping,
+                } as UserType;
+              } else {
+                return {
+                  ...member,
+                } as UserType;
+              }
+            }),
+          };
+        }
+        return chat;
+      });
+    });
+  };
+
   const resetChatNotifications = (chatId: string) => {
     setChats((prevChats) => {
       if (!prevChats) return prevChats;
@@ -155,6 +202,7 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
         removeOneChat,
         resetChatNotifications,
         updateChatLastMessage,
+        updateChatMembersField,
       },
     },
     children,
