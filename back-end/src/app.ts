@@ -109,17 +109,17 @@ io.on("connection", async (socket: Socket) => {
   );
 
   // user typing status
-  socket.on("typing", (thisUser) => {
+  socket.on("typing", (chatId, thisUser) => {
     const user = onlineUsers.find((u) => u.userId === thisUser);
     if (user) {
-      socket.to(user.socketId).emit("user_typing", thisUser);
+      socket.to(chatId).emit("user_typing", thisUser);
     }
   });
 
-  socket.on("stop_typing", (thisUser) => {
+  socket.on("stop_typing", (chatId, thisUser) => {
     const user = onlineUsers.find((u) => u.userId === thisUser);
     if (user) {
-      socket.to(user.socketId).emit("user_stop_typing", thisUser);
+      socket.to(chatId).emit("user_stop_typing", thisUser);
     }
   });
 
