@@ -124,7 +124,7 @@ io.on("connection", async (socket: Socket) => {
       ) {
         socket
           .to(onlineUser.socketId)
-          .emit("user_typing", { chatId: chatId, user: thisUser });
+          .emit("user_typing", { chatId: chatId, userId: thisUser });
       }
     }
   });
@@ -142,7 +142,7 @@ io.on("connection", async (socket: Socket) => {
       ) {
         socket
           .to(onlineUser.socketId)
-          .emit("user_stop_typing", { chatId: chatId, user: thisUser });
+          .emit("user_stop_typing", { chatId: chatId, userId: thisUser });
       }
     }
   });
