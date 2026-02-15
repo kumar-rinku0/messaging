@@ -1,7 +1,13 @@
 import type { ChatType, MessageType, UserType } from "@/types/api-types";
 import { useAuth } from "@/hooks/use-auth";
 import socket from "@/services/socket";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import api from "@/services/api";
 
 type AppDataContextType = {
@@ -37,6 +43,7 @@ type ChatsDataType = {
 const DataContext = createContext<AppDataContextType | undefined>(undefined);
 
 export const DataProvider = ({ children }: { children: React.ReactNode }) => {
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { isLoading, authInfo } = useAuth();
   if (isLoading || !authInfo) {
     return null;
@@ -82,7 +89,13 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
     userId: string;
   };
   function onUserStartTyping({ chatId, userId }: TypingResponse) {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
     updateChatMembersField(chatId, userId, true);
+    timeoutRef.current = setTimeout(() => {
+      updateChatMembersField(chatId, userId, false);
+    }, 5000);
   }
   function onUserStopTyping({ chatId, userId }: TypingResponse) {
     updateChatMembersField(chatId, userId, false);

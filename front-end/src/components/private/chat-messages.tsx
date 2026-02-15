@@ -3,16 +3,9 @@ import type { ChatType, MessageType, UserType } from "@/types/api-types";
 import React, { useEffect, useRef } from "react";
 import { motion } from "motion/react";
 import { easeOut } from "motion"; // Add this import at the top with other imports
-import {
-  ListChecks,
-  ListTodo,
-  MoreVertical,
-  SendHorizonal,
-  Trash,
-} from "lucide-react";
+import { MoreVertical, SendHorizonal } from "lucide-react";
 import socket from "@/services/socket";
 import { useNavigate, useParams } from "react-router";
-import { ScrollArea } from "../ui/scroll-area";
 import { Button } from "../ui/button";
 import { useData } from "@/hooks/use-data";
 import {
@@ -22,6 +15,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { toast } from "sonner";
+import AllMessages from "./all-messages";
 
 type ResponseType = {
   messages: MessageType[];
@@ -39,11 +33,15 @@ const transitionDebug = {
 
 const ChatMessages = () => {
   const { chatId } = useParams<{ chatId: string }>();
-  const { chats, resetChatNotifications } = useData();
+  const { chats } = useData();
   const chat = chats?.find((c) => c._id === chatId);
-  if (!chat) return;
+  if (!chatId || !chat) return <div>Invalid Chat Id</div>;
+  return <ChatMsgFunc key={chatId} chatId={chatId} chat={chat} />;
+};
+
+const ChatMsgFunc = ({ chatId, chat }: { chatId: string; chat: ChatType }) => {
+  const { resetChatNotifications } = useData();
   const [messages, setMessages] = React.useState<MessageType[]>([]);
-  const [selected, setSelected] = React.useState<string[]>([]);
   const [count, setCount] = React.useState<{
     totalMessages: number;
     page: number;
@@ -87,8 +85,6 @@ const ChatMessages = () => {
     socket.on("msg", onChatMessage);
     resetChatNotifications(chatId);
     return () => {
-      setMessages([]);
-      setSelected([]);
       socket.emit("leave-chat", chatId);
       socket.off("msg", onChatMessage);
       resetChatNotifications(chatId);
@@ -117,17 +113,6 @@ const ChatMessages = () => {
         );
       });
   };
-
-  const bottomRef = useRef<HTMLDivElement | null>(null);
-  const shouldScrollRef = useRef<boolean>(true);
-
-  useEffect(() => {
-    if (shouldScrollRef.current) {
-      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-    } else {
-      shouldScrollRef.current = true;
-    }
-  }, [messages]);
 
   const setMessagesNULL = () => {
     setMessages([]);
@@ -168,63 +153,12 @@ const ChatMessages = () => {
       </div>
       {/* <div className="flex h-[calc(100vh-40px)] flex-col items-end justify-end pb-4 px-1"> */}
       <div className="flex relative h-[calc(100vh-3.5rem)] flex-col">
-        <ScrollArea className="flex-1 w-full overflow-y-auto">
-          {messages.length > 10 && count.page < count.totalPages ? (
-            <Button
-              className="w-full text-center"
-              variant="link"
-              onClick={() => {
-                shouldScrollRef.current = false;
-                fetchChatMessages(count.page + 1);
-              }}
-            >
-              load more
-            </Button>
-          ) : (
-            <div className="p-1" />
-          )}
-          <div className="flex flex-col gap-2 px-2">
-            {messages.map((message) => (
-              <motion.div
-                key={message._id}
-                onDoubleClick={() =>
-                  setSelected((prev) =>
-                    prev.includes(message._id)
-                      ? prev.filter((e) => e !== message._id)
-                      : [...prev, message._id],
-                  )
-                }
-                className={`max-w-[80%] px-4 py-2 rounded-xl text-sm shadow
-            ${
-              message.sender === auth_user._id
-                ? "self-end bg-green-500 text-white"
-                : "self-start bg-gray-200 text-gray-900 dark:bg-gray-800 dark:text-white"
-            }`}
-              >
-                {message.msg}
-                {selected.includes(message._id) && (
-                  <span className="text-red-500">*</span>
-                )}
-              </motion.div>
-            ))}
-            <div ref={bottomRef} />
-          </div>
-        </ScrollArea>
-        {selected.length > 0 && (
-          <div className="absolute top-1 right-0 bg-transparent flex gap-1">
-            <Button>
-              <Trash />
-            </Button>
-            <Button>
-              <ListChecks />
-            </Button>
-            <Button>
-              <ListTodo />
-            </Button>
-          </div>
-        )}
-
-        {/* </div> */}
+        <AllMessages
+          key={chatId}
+          messages={messages}
+          count={count}
+          fetchChatMessages={fetchChatMessages}
+        />
 
         {/* <div className="flex w-full"> */}
         <form
