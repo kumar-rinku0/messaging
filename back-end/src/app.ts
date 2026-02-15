@@ -86,7 +86,7 @@ io.on("connection", async (socket: Socket) => {
   socket.on("join-chat", async (chatId) => {
     socket.join(chatId);
     await updateNotificationCount({ pos: "reset", chatId, userId });
-    console.log(`User ${userId} joined chat ${chatId}`);
+    console.log(`User ${username} joined chat ${chatId}`);
   });
 
   socket.on(
@@ -150,7 +150,7 @@ io.on("connection", async (socket: Socket) => {
   socket.on("leave-chat", async (chatId) => {
     socket.leave(chatId);
     await updateNotificationCount({ pos: "reset", chatId, userId });
-    console.log(`User ${userId} left chat ${chatId}`);
+    console.log(`User ${username} left chat ${chatId}`);
   });
 
   socket.on("disconnect", async () => {
