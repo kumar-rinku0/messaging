@@ -52,23 +52,15 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     socket.on("online-users", getOnlineUsers);
     socket.on("notification", onChatMessage);
-    socket.on(
-      "user_typing",
-      ({ chatId, user }: { chatId: string; user: string }) => {
-        updateChatMembersField(chatId, user, true);
-      },
-    );
+    socket.on("user_typing", onUserStartTyping);
+    socket.on("user_stop_typing", onUserStopTyping);
 
     getChatsData();
     return () => {
       socket.off("online-users", getOnlineUsers);
       socket.off("notification", onChatMessage);
-      socket.on(
-        "user_stop_typing",
-        ({ chatId, user }: { chatId: string; user: string }) => {
-          updateChatMembersField(chatId, user, false);
-        },
-      );
+      socket.off("user_typing", onUserStartTyping);
+      socket.off("user_stop_typing", onUserStopTyping);
     };
   }, []);
 
@@ -84,6 +76,16 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
     // Optionally, you can update chats or messages here if needed
     updateChatLastMessage(newMsg.chatId, newMsg, 1);
     // router.push({ pathname: "/chat/[slug]", params: { slug: chatId } });
+  }
+  type TypingResponse = {
+    chatId: string;
+    userId: string;
+  };
+  function onUserStartTyping({ chatId, userId }: TypingResponse) {
+    updateChatMembersField(chatId, userId, true);
+  }
+  function onUserStopTyping({ chatId, userId }: TypingResponse) {
+    updateChatMembersField(chatId, userId, false);
   }
 
   const changeDataState = <K extends keyof DataStateType>(
