@@ -23,6 +23,7 @@ export const getFormatedChat = (chat: any, userId: any) => {
     updatedAt: chat.updatedAt,
     displayName,
     displayAvatar,
+    members: chat.members,
     lastMessage: chat.lastMessage,
     notificationCount: notification.count,
   };
@@ -37,8 +38,13 @@ export const getOnlineUsers = async (
   return users;
 };
 
+export const getOneOnlineUserUsername = async (userId: string) => {
+  const user = await User.findById(userId).select("_id username").lean();
+  return user ? user.username : null;
+};
+
 export const getMembersFromChat = async (chatId: string, userId: string) => {
-  const chat = await Chat.findById(chatId);
+  const chat = await Chat.findById(chatId).lean();
   if (!chat) return [];
   return chat.members.filter((m) => m.toString() !== userId.toString());
 };

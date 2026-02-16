@@ -1,7 +1,13 @@
 import type { ChatType, MessageType, UserType } from "@/types/api-types";
 import { useAuth } from "@/hooks/use-auth";
 import socket from "@/services/socket";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import api from "@/services/api";
 
 type AppDataContextType = {
@@ -11,6 +17,11 @@ type AppDataContextType = {
   addNewChat: (newChat: ChatType) => void;
   removeOneChat: (chatId: string) => void;
   resetChatNotifications: (chatId: string) => void;
+  updateChatMembersField: (
+    chatId: string,
+    value: string,
+    isTyping: boolean,
+  ) => void;
   updateChatLastMessage: (
     chatId: string,
     message: MessageType,
@@ -32,6 +43,7 @@ type ChatsDataType = {
 const DataContext = createContext<AppDataContextType | undefined>(undefined);
 
 export const DataProvider = ({ children }: { children: React.ReactNode }) => {
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { isLoading, authInfo } = useAuth();
   if (isLoading || !authInfo) {
     return null;
@@ -47,11 +59,15 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     socket.on("online-users", getOnlineUsers);
     socket.on("notification", onChatMessage);
+    socket.on("user_typing", onUserStartTyping);
+    socket.on("user_stop_typing", onUserStopTyping);
 
     getChatsData();
     return () => {
       socket.off("online-users", getOnlineUsers);
       socket.off("notification", onChatMessage);
+      socket.off("user_typing", onUserStartTyping);
+      socket.off("user_stop_typing", onUserStopTyping);
     };
   }, []);
 
@@ -67,6 +83,22 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
     // Optionally, you can update chats or messages here if needed
     updateChatLastMessage(newMsg.chatId, newMsg, 1);
     // router.push({ pathname: "/chat/[slug]", params: { slug: chatId } });
+  }
+  type TypingResponse = {
+    chatId: string;
+    userId: string;
+  };
+  function onUserStartTyping({ chatId, userId }: TypingResponse) {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    updateChatMembersField(chatId, userId, true);
+    timeoutRef.current = setTimeout(() => {
+      updateChatMembersField(chatId, userId, false);
+    }, 5000);
+  }
+  function onUserStopTyping({ chatId, userId }: TypingResponse) {
+    updateChatMembersField(chatId, userId, false);
   }
 
   const changeDataState = <K extends keyof DataStateType>(
@@ -129,6 +161,36 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
     });
   };
 
+  const updateChatMembersField = (
+    chatId: string,
+    value: string,
+    isTyping: boolean,
+  ) => {
+    setChats((prevChats) => {
+      if (!prevChats) return prevChats;
+      return prevChats.map((chat) => {
+        if (chat._id === chatId) {
+          return {
+            ...chat,
+            members: chat.members.map((member) => {
+              if (member._id === value) {
+                return {
+                  ...member,
+                  typing: isTyping,
+                } as UserType;
+              } else {
+                return {
+                  ...member,
+                } as UserType;
+              }
+            }),
+          };
+        }
+        return chat;
+      });
+    });
+  };
+
   const resetChatNotifications = (chatId: string) => {
     setChats((prevChats) => {
       if (!prevChats) return prevChats;
@@ -155,6 +217,7 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
         removeOneChat,
         resetChatNotifications,
         updateChatLastMessage,
+        updateChatMembersField,
       },
     },
     children,

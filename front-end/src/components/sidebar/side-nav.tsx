@@ -5,6 +5,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { LogOut, MessageCircleMore, UserPlus } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useData } from "@/hooks/use-data";
+import type { UserType } from "@/types/api-types";
 // import {
 //   requestNotificationPermission,
 //   showNotification,
@@ -101,6 +102,7 @@ export default function SideNav() {
                         <SideNavItem
                           label={chat.displayName}
                           avatar={chat.displayAvatar}
+                          typingUsers={chat.members}
                           notificationCount={chat.notificationCount}
                           path={`/${chat._id}`}
                           active={isNavItemActive(pathname, `/${chat._id}`)}
@@ -155,7 +157,17 @@ export const SideNavItem: React.FC<{
   path: string;
   active: boolean;
   isOnline?: boolean;
-}> = ({ label, avatar, path, active, notificationCount, isOnline }) => {
+  typingUsers: UserType[];
+}> = ({
+  label,
+  avatar,
+  path,
+  active,
+  notificationCount,
+  isOnline,
+  typingUsers,
+}) => {
+  // console.log(typingUsers);
   return (
     <Link
       to={path}
@@ -182,6 +194,14 @@ export const SideNavItem: React.FC<{
       </div>
       <div className="relative font-base text-sm py-1.5 px-2 flex flex-row items-center space-x-2 rounded-md duration-100">
         <span className="font-medium truncate">{label}</span>
+        {typingUsers && typingUsers.some((user) => user?.typing) && (
+          <span>
+            {typingUsers
+              .filter((user) => user?.typing)
+              .map((user) => `${user.username} `)}
+            typing
+          </span>
+        )}
       </div>
       {notificationCount !== 0 && (
         <span

@@ -6,7 +6,6 @@ import { easeOut } from "motion"; // Add this import at the top with other impor
 import { MoreVertical, SendHorizonal } from "lucide-react";
 import socket from "@/services/socket";
 import { useNavigate, useParams } from "react-router";
-import { ScrollArea } from "../ui/scroll-area";
 import { Button } from "../ui/button";
 import { useData } from "@/hooks/use-data";
 import {
@@ -16,6 +15,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { toast } from "sonner";
+import AllMessages from "./all-messages";
 
 type ResponseType = {
   messages: MessageType[];
@@ -32,8 +32,15 @@ const transitionDebug = {
 };
 
 const ChatMessages = () => {
-  const { resetChatNotifications } = useData();
   const { chatId } = useParams<{ chatId: string }>();
+  const { chats } = useData();
+  const chat = chats?.find((c) => c._id === chatId);
+  if (!chatId || !chat) return <div>Invalid Chat Id</div>;
+  return <ChatMsgFunc key={chatId} chatId={chatId} chat={chat} />;
+};
+
+const ChatMsgFunc = ({ chatId, chat }: { chatId: string; chat: ChatType }) => {
+  const { resetChatNotifications } = useData();
   const [messages, setMessages] = React.useState<MessageType[]>([]);
   const [count, setCount] = React.useState<{
     totalMessages: number;
@@ -41,7 +48,6 @@ const ChatMessages = () => {
     totalPages: number;
     limit: number;
   }>({ totalMessages: 0, page: 1, totalPages: 1, limit: 0 });
-  const [chat, setChat] = React.useState<ChatType | null>(null);
   const [msg, setMsg] = React.useState<string>("");
   const auth_user_token = localStorage.getItem("auth_user") || "";
   const auth_user = JSON.parse(auth_user_token) as UserType;
@@ -55,7 +61,6 @@ const ChatMessages = () => {
         const {
           messages: newMessages,
           totalMessages,
-          chat,
           totalPages,
           page,
           limit,
@@ -67,7 +72,6 @@ const ChatMessages = () => {
           setMessages(allMessages);
         }
         setCount({ totalMessages, page, totalPages, limit });
-        setChat(chat);
       });
   }
   useEffect(() => {
@@ -81,8 +85,6 @@ const ChatMessages = () => {
     socket.on("msg", onChatMessage);
     resetChatNotifications(chatId);
     return () => {
-      setMessages([]);
-      setChat(null);
       socket.emit("leave-chat", chatId);
       socket.off("msg", onChatMessage);
       resetChatNotifications(chatId);
@@ -112,23 +114,23 @@ const ChatMessages = () => {
       });
   };
 
-  const bottomRef = useRef<HTMLDivElement | null>(null);
-  const shouldScrollRef = useRef<boolean>(true);
-
-  useEffect(() => {
-    if (shouldScrollRef.current) {
-      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-    } else {
-      shouldScrollRef.current = true;
-    }
-  }, [messages]);
-
-  if (!chat) {
-    return <div>Loading...</div>;
-  }
-
   const setMessagesNULL = () => {
     setMessages([]);
+  };
+
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleTyping = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setMsg(e.target.value);
+    socket.emit("typing", chatId, auth_user._id);
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    typingTimeoutRef.current = setTimeout(() => {
+      socket.emit("stop_typing", chatId, auth_user._id);
+    }, 1000);
   };
 
   return (
@@ -150,41 +152,13 @@ const ChatMessages = () => {
         <MoreOptions chatId={chatId!} setMessagesNULL={setMessagesNULL} />
       </div>
       {/* <div className="flex h-[calc(100vh-40px)] flex-col items-end justify-end pb-4 px-1"> */}
-      <div className="flex h-[calc(100vh-3.5rem)] flex-col">
-        <ScrollArea className="flex-1 w-full overflow-y-auto">
-          {messages.length > 10 && count.page < count.totalPages ? (
-            <Button
-              className="w-full text-center"
-              variant="link"
-              onClick={() => {
-                shouldScrollRef.current = false;
-                fetchChatMessages(count.page + 1);
-              }}
-            >
-              load more
-            </Button>
-          ) : (
-            <div className="p-1" />
-          )}
-          <div className="flex flex-col gap-2 px-2">
-            {messages.map((message) => (
-              <motion.div
-                key={message._id}
-                className={`max-w-[80%] px-4 py-2 rounded-xl text-sm shadow
-          ${
-            message.sender === auth_user._id
-              ? "self-end bg-green-500 text-white"
-              : "self-start bg-gray-200 text-gray-900 dark:bg-gray-800 dark:text-white"
-          }`}
-              >
-                {message.msg}
-              </motion.div>
-            ))}
-            <div ref={bottomRef} />
-          </div>
-        </ScrollArea>
-
-        {/* </div> */}
+      <div className="flex relative h-[calc(100vh-3.5rem)] flex-col">
+        <AllMessages
+          key={chatId}
+          messages={messages}
+          count={count}
+          fetchChatMessages={fetchChatMessages}
+        />
 
         {/* <div className="flex w-full"> */}
         <form
@@ -193,7 +167,7 @@ const ChatMessages = () => {
         >
           <input
             type="text"
-            onChange={(e) => setMsg(e.target.value)}
+            onChange={handleTyping}
             value={msg}
             className="relative h-9 w-[250px] flex-grow rounded-lg border border-gray-200 bg-white px-3 text-[15px] outline-none placeholder:text-gray-400 focus-visible:ring-0 focus-visible:ring-blue-500/20 focus-visible:ring-offset-1
             dark:border-black/60 dark:bg-black dark:text-gray-50 dark:placeholder-gray-500 dark:focus-visible:ring-blue-500/20 dark:focus-visible:ring-offset-1 dark:focus-visible:ring-offset-gray-700"

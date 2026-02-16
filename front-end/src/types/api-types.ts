@@ -10,6 +10,7 @@ export type UserType = {
   username: string;
   _id: string;
   avatar: string;
+  typing: undefined | boolean;
 };
 
 export type ChatType = {
