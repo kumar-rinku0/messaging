@@ -89,39 +89,29 @@ io.on("connection", async (socket: Socket) => {
     console.log(`User ${username} joined chat ${chatId}`);
   });
 
-  socket.on(
-    "msg",
-    async (
-      { chatId, userId }: { chatId: string; userId: string },
-      msg: any,
-    ) => {
-      socket.to(chatId).emit("msg", msg);
-      await updateNotificationCount({ pos: "inc", chatId, userId });
-      const membersExceptSender = await getMembersFromChat(chatId, userId);
-      membersExceptSender.map((member) => {
-        const isMemberOnline = onlineUsers.some(
-          (onlineUser) => onlineUser.userId === member.toString(),
-        );
-        if (isMemberOnline) {
-          socket.except(chatId).emit("notification", msg);
-        }
-      });
-      // const sender = filteredUsers.find((v) => v._id.toString() === userId);
-      const username = "new message";
-      await createNotifications(membersExceptSender, msg, username);
-    },
-  );
+  socket.on("msg", async (chatId: string, msg: any) => {
+    socket.to(chatId).emit("msg", msg);
+    await updateNotificationCount({ pos: "inc", chatId, userId });
+    const membersExceptSender = await getMembersFromChat(chatId, userId);
+    for (const member of membersExceptSender) {
+      const isMemberOnline = onlineUsers.some(
+        (onlineUser) => onlineUser.userId === member.toString(),
+      );
+      if (isMemberOnline) {
+        socket.except(chatId).emit("notification", msg);
+      }
+    }
+    await createNotifications(membersExceptSender, msg, username);
+  });
 
   // user typing status
   socket.on("typing", async (chatId, thisUser) => {
-    // socket.to(chatId).emit("user_typing", { chatId: chatId, user: thisUser });
     const membersExceptSender = await getMembersFromChat(chatId, thisUser);
     for (const onlineUser of onlineUsers) {
-      if (
-        membersExceptSender.some(
-          (member) => member.toString() === onlineUser.userId,
-        )
-      ) {
+      const isMemberOnline = membersExceptSender.some(
+        (member) => member.toString() === onlineUser.userId,
+      );
+      if (isMemberOnline) {
         socket
           .to(onlineUser.socketId)
           .emit("user_typing", { chatId: chatId, userId: thisUser });
@@ -130,16 +120,12 @@ io.on("connection", async (socket: Socket) => {
   });
 
   socket.on("stop_typing", async (chatId, thisUser) => {
-    // socket
-    //   .to(chatId)
-    //   .emit("user_stop_typing", { chatId: chatId, user: thisUser });
     const membersExceptSender = await getMembersFromChat(chatId, thisUser);
     for (const onlineUser of onlineUsers) {
-      if (
-        membersExceptSender.some(
-          (member) => member.toString() === onlineUser.userId,
-        )
-      ) {
+      const isMemberOnline = membersExceptSender.some(
+        (member) => member.toString() === onlineUser.userId,
+      );
+      if (isMemberOnline) {
         socket
           .to(onlineUser.socketId)
           .emit("user_stop_typing", { chatId: chatId, userId: thisUser });
