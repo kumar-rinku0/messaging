@@ -2,7 +2,7 @@ import React, { Fragment } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import { Button } from "../ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { LogOut, MessageCircleMore, UserPlus } from "lucide-react";
+import { Keyboard, LogOut, MessageCircleMore, UserPlus } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useData } from "@/hooks/use-data";
 import type { UserType } from "@/types/api-types";
@@ -195,11 +195,8 @@ export const SideNavItem: React.FC<{
       <div className="relative font-base text-sm py-1.5 px-2 flex flex-row items-center space-x-2 rounded-md duration-100">
         <span className="font-medium truncate">{label}</span>
         {typingUsers && typingUsers.some((user) => user?.typing) && (
-          <span>
-            {typingUsers
-              .filter((user) => user?.typing)
-              .map((user) => `${user.username} `)}
-            typing
+          <span className="bg-green-500 p-1 rounded-full">
+            <Keyboard color="white" size={18} />
           </span>
         )}
       </div>
