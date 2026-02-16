@@ -106,16 +106,12 @@ const ChatMsgFunc = ({ chatId, chat }: { chatId: string; chat: ChatType }) => {
         setMessages((prevMessages) => [...prevMessages, message]);
         setMsg(""); // Clear the input field after sending the message
         if (!chat) return;
-        socket.emit(
-          "msg",
-          { chatId: chat._id, userId: auth_user._id },
-          message,
-        );
+        socket.emit("msg", chat._id, message);
       });
   };
 
-  const setMessagesNULL = () => {
-    setMessages([]);
+  const updateMessages = (ids: string[]) => {
+    setMessages((prev) => prev.filter((m) => !ids.includes(m._id)));
   };
 
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -149,15 +145,17 @@ const ChatMsgFunc = ({ chatId, chat }: { chatId: string; chat: ChatType }) => {
           </div> */}
           <span className="font-semibold">{chat?.displayName}</span>
         </div>
-        <MoreOptions chatId={chatId!} setMessagesNULL={setMessagesNULL} />
+        <MoreOptions chatId={chatId!} updateMessages={updateMessages} />
       </div>
       {/* <div className="flex h-[calc(100vh-40px)] flex-col items-end justify-end pb-4 px-1"> */}
       <div className="flex relative h-[calc(100vh-3.5rem)] flex-col">
         <AllMessages
           key={chatId}
+          chatId={chatId}
           messages={messages}
           count={count}
           fetchChatMessages={fetchChatMessages}
+          updateMessages={updateMessages}
         />
 
         {/* <div className="flex w-full"> */}
@@ -213,10 +211,10 @@ type ResponseTypeDeleteMsg = {
 
 const MoreOptions = ({
   chatId,
-  setMessagesNULL,
+  updateMessages,
 }: {
   chatId: string;
-  setMessagesNULL: () => void;
+  updateMessages: (ids: string[]) => void;
 }) => {
   const router = useNavigate();
   const { removeOneChat } = useData();
@@ -239,7 +237,7 @@ const MoreOptions = ({
           toast.error(res.data.message);
           return;
         }
-        setMessagesNULL();
+        updateMessages([]);
         toast.success(res.data.message);
       });
   };
