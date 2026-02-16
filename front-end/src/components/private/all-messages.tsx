@@ -4,13 +4,18 @@ import { Button } from "../ui/button";
 import type { MessageType } from "@/types/api-types";
 import { motion } from "motion/react";
 import { useAuth } from "@/hooks/use-auth";
-import { ListChecks, ListTodo, Trash } from "lucide-react";
+import { Copy, ListChecks, ListTodo, Trash, X } from "lucide-react";
+import { toast } from "sonner";
+import api from "@/services/api";
 
 const AllMessages = ({
+  chatId,
   messages,
   count,
   fetchChatMessages,
+  updateMessages,
 }: {
+  chatId: string;
   messages: MessageType[];
   count: {
     totalMessages: number;
@@ -19,12 +24,47 @@ const AllMessages = ({
     limit: number;
   };
   fetchChatMessages: (pageNo: number) => void;
+  updateMessages: (ids: string[]) => void;
 }) => {
   const { authInfo } = useAuth();
   if (!authInfo) return;
   const [selected, setSelected] = useState<string[]>([]);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const shouldScrollRef = useRef<boolean>(true);
+
+  const handleCopyTEXT = async () => {
+    try {
+      await navigator.clipboard.writeText(
+        messages
+          .filter((m) => selected.includes(m._id))
+          .map((m) => m.msg)
+          .join(" "),
+      );
+      toast.success("copied to clipboard!");
+    } catch (err) {
+      console.error("Failed to copy: ", err);
+    }
+  };
+
+  const handleDeleteMessages = async () => {
+    type ResponseType = {
+      ok: boolean;
+      message: string;
+    };
+    const { data } = await api<ResponseType>(`/msg/chatId/${chatId}`, {
+      method: "DELETE",
+      data: {
+        ids: selected,
+      },
+    });
+    if (!data.ok) {
+      toast.error(data.message);
+      return;
+    }
+    updateMessages(selected);
+    setSelected([]);
+    toast.success(data.message);
+  };
 
   useEffect(() => {
     if (shouldScrollRef.current) {
@@ -61,7 +101,7 @@ const AllMessages = ({
                     : [...prev, message._id],
                 )
               }
-              className={`max-w-[80%] px-4 py-2 rounded-xl text-sm shadow
+              className={`max-w-[80%] relative px-4 py-2 rounded-xl text-sm shadow select-none
             ${
               message.sender === authInfo.auth_user._id
                 ? "self-end bg-green-500 text-white"
@@ -70,7 +110,7 @@ const AllMessages = ({
             >
               {message.msg}
               {selected.includes(message._id) && (
-                <span className="text-red-500">*</span>
+                <span className="absolute -top-1 -right-1">✔️</span>
               )}
             </motion.div>
           ))}
@@ -78,15 +118,21 @@ const AllMessages = ({
         </div>
       </ScrollArea>
       {selected.length > 0 && (
-        <div className="absolute top-1 right-0 bg-transparent flex gap-1">
-          <Button>
+        <div className="absolute top-1 bg-transparent flex gap-1 px-2">
+          <Button onClick={handleDeleteMessages}>
             <Trash />
+          </Button>
+          <Button onClick={handleCopyTEXT}>
+            <Copy />
           </Button>
           <Button>
             <ListChecks />
           </Button>
           <Button>
             <ListTodo />
+          </Button>
+          <Button variant="destructive" onClick={() => setSelected([])}>
+            <X />
           </Button>
         </div>
       )}

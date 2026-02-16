@@ -5,6 +5,7 @@ import {
   handleGetLastMessageByChatId,
   handleGetAllMessagesByChatId,
   handleDeleteAllMessagesByChatId,
+  handleDeleteSelectedMessagesByChatId,
 } from "@/controllers/msg.controller";
 
 const msgRouter = Router();
@@ -14,7 +15,10 @@ msgRouter
   .route("/all/chatId/:chatId")
   .get(handleGetAllMessagesByChatId)
   .delete(handleDeleteAllMessagesByChatId);
-msgRouter.route("/chatId/:chatId").get(handleGetMessagesByChatId);
+msgRouter
+  .route("/chatId/:chatId")
+  .get(handleGetMessagesByChatId)
+  .delete(handleDeleteSelectedMessagesByChatId);
 msgRouter
   .route("/last-message/chatId/:chatId")
   .get(handleGetLastMessageByChatId);

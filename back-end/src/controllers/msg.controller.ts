@@ -97,10 +97,26 @@ const handleDeleteAllMessagesByChatId = async (req: Request, res: Response) => {
   return res.status(200).json({ ok: true, message: "messages pruned." });
 };
 
+const handleDeleteSelectedMessagesByChatId = async (
+  req: Request,
+  res: Response,
+) => {
+  const { chatId } = req.params;
+  const { ids } = req.body;
+  const doc = await Message.deleteMany({ chatId: chatId, _id: { $in: ids } });
+  if (!doc) {
+    return res
+      .status(400)
+      .json({ ok: false, message: "failed to prune messages." });
+  }
+  return res.status(200).json({ ok: true, message: "messages pruned." });
+};
+
 export {
   handleCreateMessage,
   handleGetMessagesByChatId,
   handleGetLastMessageByChatId,
   handleGetAllMessagesByChatId,
   handleDeleteAllMessagesByChatId,
+  handleDeleteSelectedMessagesByChatId,
 };
