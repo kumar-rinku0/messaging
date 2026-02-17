@@ -40,6 +40,7 @@ const ChatMessages = () => {
 };
 
 const ChatMsgFunc = ({ chatId, chat }: { chatId: string; chat: ChatType }) => {
+  const typingUsers = chat.members;
   const { resetChatNotifications } = useData();
   const [messages, setMessages] = React.useState<MessageType[]>([]);
   const [count, setCount] = React.useState<{
@@ -132,7 +133,7 @@ const ChatMsgFunc = ({ chatId, chat }: { chatId: string; chat: ChatType }) => {
   return (
     <div className="h-[100vh]">
       <div className="h-14 px-2 flex justify-between items-center border-b border-b-gray-200">
-        <div className="flex flex-1 items-center gap-2 px-4">
+        <div className="flex flex-col px-4">
           {/* <div className="relative w-12 h-12">
             <img
               src={
@@ -144,6 +145,14 @@ const ChatMsgFunc = ({ chatId, chat }: { chatId: string; chat: ChatType }) => {
             />
           </div> */}
           <span className="font-semibold">{chat?.displayName}</span>
+          {typingUsers && typingUsers.some((user) => user?.typing) && (
+            <span className="font-light text-sm truncate">
+              {typingUsers
+                .filter((user) => user?.typing)
+                .map((user) => `${user.username} `)}
+              typing
+            </span>
+          )}
         </div>
         <MoreOptions chatId={chatId!} updateMessages={updateMessages} />
       </div>
