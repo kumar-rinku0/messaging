@@ -4,8 +4,11 @@ import Chat from "@/models/chat.model";
 import { getFormatedChat } from "@/utils/type-fix";
 
 const handleCreateMessage = async (req: Request, res: Response) => {
-  const { chatId, sender, msg } = req.body;
+  const { chatId, sender, msg, attachment } = req.body;
   const user = req.user;
+  if (sender !== user._id) {
+    return res.status(403).json({ message: "Unauthorized", ok: false });
+  }
   const chat = await Chat.findById(chatId);
   if (!chat) {
     return res.status(400).json({ message: "chat not found", ok: false });
@@ -14,6 +17,7 @@ const handleCreateMessage = async (req: Request, res: Response) => {
     chatId,
     sender,
     msg,
+    attachment,
     seenBy: [sender],
   });
   await message.save();
