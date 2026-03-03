@@ -16,6 +16,11 @@ const msgSchema = new Schema(
       type: String,
       required: true,
     },
+    attachment: {
+      url: String,
+      type: String,
+      required: false,
+    },
     seenBy: {
       type: [
         {
