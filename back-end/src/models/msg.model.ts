@@ -21,7 +21,6 @@ const msgSchema = new Schema(
         url: String,
         type: String,
       },
-      required: false,
     },
     seenBy: {
       type: [
