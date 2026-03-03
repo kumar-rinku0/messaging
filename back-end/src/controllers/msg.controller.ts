@@ -17,9 +17,11 @@ const handleCreateMessage = async (req: Request, res: Response) => {
     chatId,
     sender,
     msg,
-    attachment,
     seenBy: [sender],
   });
+  if (attachment) {
+    message.attachment = attachment;
+  }
   await message.save();
   chat.lastMessage = message._id;
   await chat.save();
