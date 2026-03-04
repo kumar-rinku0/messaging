@@ -68,13 +68,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     localStorage.removeItem("auth_token");
     localStorage.removeItem("auth_user");
     setAuthInfo(null);
+    location.assign("/");
   };
 
   const updateAuthUser = async (auth_user: UserType) => {
     if (!authInfo) return;
-    const stringAuthUser = JSON.stringify(auth_user!);
+    const authToken = authInfo.auth_token;
+    const stringAuthUser = JSON.stringify(auth_user);
     localStorage.setItem("auth_user", stringAuthUser);
-    setAuthInfo({ auth_user: auth_user, auth_token: stringAuthUser });
+    setAuthInfo({ auth_user: auth_user, auth_token: authToken });
   };
 
   return React.createElement(
