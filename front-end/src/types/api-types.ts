@@ -10,6 +10,7 @@ export type UserType = {
   username: string;
   _id: string;
   avatar: string;
+  email: string;
   typing: undefined | boolean;
 };
 

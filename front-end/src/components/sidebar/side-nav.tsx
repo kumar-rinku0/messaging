@@ -119,7 +119,7 @@ export default function SideNav() {
           {/* Bottom */}
           <div className="h-12 sticky bottom-0 mt-auto whitespace-nowrap transition duration-200 flex items-center justify-between gap-2 px-2 bg-accent dark:bg-accent-foreground border-t border-t-neutral-200 dark:border-t-neutral-800">
             {isMobile ? null : (
-              <div className="flex items-center gap-2">
+              <Link className="flex items-center gap-2" to={"/profile"}>
                 <div>
                   <img
                     src={authInfo.auth_user?.avatar}
@@ -130,7 +130,7 @@ export default function SideNav() {
                 <span className="font-medium">
                   {authInfo.auth_user?.username}
                 </span>
-              </div>
+              </Link>
             )}
             <div className="relative font-base text-sm px-1 flex flex-row items-center space-x-2 rounded-md duration-100">
               <Button

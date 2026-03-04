@@ -17,13 +17,10 @@ const msgSchema = new Schema(
       required: true,
     },
     attachment: {
-      url: {
-        type: String,
-        required: true,
-      },
+      url: String,
       type: {
         type: String,
-        required: true,
+        // enum: ["image", "video", "file"],
       },
     },
     seenBy: {
