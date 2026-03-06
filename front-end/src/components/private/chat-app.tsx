@@ -8,10 +8,7 @@ import { toast } from "sonner";
 import socket from "@/services/socket";
 
 type ResponseType = {
-  users: {
-    _id: string;
-    username: string;
-  }[];
+  users: UserType[];
   message: string;
 };
 
@@ -41,7 +38,9 @@ const ChatApp = () => {
   if (!auth_user) {
     return <div>Please log in to access the chat application.</div>;
   }
-  const [searchContent, setSearchContent] = useState<ResponseType["users"]>([]);
+  const [searchContent, setSearchContent] = useState<UserType[]>([]);
+  const [selectedUsers, setSelectedUsers] = useState<UserType[]>([]);
+  const [groupName, setGroupName] = useState("");
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     // Implement search functionality here
@@ -49,11 +48,59 @@ const ChatApp = () => {
     const searchTerm = formData.get("search");
     console.log("Searching for:", searchTerm);
     api
-      .get(`/user/search?q=${searchTerm}&user=${auth_user._id}`)
+      .get<ResponseType>(`/user/search?q=${searchTerm}&user=${auth_user._id}`)
       .then((response) => {
         console.log("Search results:", response.data);
         setSearchContent(response.data.users);
       });
+  };
+
+  const createSingleChat = () => {
+    if (selectedUsers.length !== 1) {
+      toast.error("Please select exactly 1 user to create a private chat.");
+      return;
+    }
+    api
+      .post("/chat/private", {
+        sender: auth_user._id,
+        recipient: selectedUsers[0]._id,
+      })
+      .then((response) => {
+        console.log("Private chat created or fetched:", response.data);
+        location.assign(`/${response.data.chat._id}`); // Redirect to the chat page
+      });
+  };
+  const createGroupChat = () => {
+    if (selectedUsers.length < 2) {
+      toast.error("Please select at least 2 users to create a group chat.");
+      return;
+    }
+    const userIds = selectedUsers.map((user) => user._id);
+    api
+      .post("/chat/group", {
+        members: [auth_user._id, ...userIds],
+        name: groupName.length > 0 ? groupName : "New Group Chat",
+      })
+      .then((response) => {
+        console.log("Group chat created:", response.data);
+        location.assign(`/${response.data.chat._id}`); // Redirect to the chat page
+      });
+  };
+
+  const handleCreateChat = () => {
+    if (selectedUsers.length === 1) {
+      createSingleChat();
+    } else if (selectedUsers.length > 1) {
+      createGroupChat();
+    }
+  };
+
+  const handleUserSelect = (user: UserType) => {
+    if (selectedUsers.some((u) => u._id === user._id)) {
+      setSelectedUsers(selectedUsers.filter((u) => u._id !== user._id));
+    } else {
+      setSelectedUsers([...selectedUsers, user]);
+    }
   };
 
   return (
@@ -62,7 +109,7 @@ const ChatApp = () => {
       <div className="flex md:hidden">
         <SideNav mobile />
       </div> */}
-      <div className="flex">
+      <div className="flex flex-wrap justify-start items-start gap-8">
         <div>
           <form
             className="flex items-center justify-center"
@@ -85,20 +132,7 @@ const ChatApp = () => {
                   <li
                     key={user._id}
                     className="p-2 border-b"
-                    onClick={() => {
-                      api
-                        .post("/chat/private", {
-                          sender: auth_user._id,
-                          recipient: user._id,
-                        })
-                        .then((response) => {
-                          console.log(
-                            "Private chat created or fetched:",
-                            response.data,
-                          );
-                          location.assign(`/${response.data.chat._id}`); // Redirect to the chat page
-                        });
-                    }}
+                    onClick={() => handleUserSelect(user)}
                   >
                     {user.username}
                   </li>
@@ -106,6 +140,41 @@ const ChatApp = () => {
               </ul>
             </div>
           ) : null}
+        </div>
+        <div>
+          {selectedUsers.length > 0 && (
+            <div className="m-4">
+              <h2 className="mb-2 font-semibold">Selected Users:</h2>
+              <ul>
+                {selectedUsers.map((user) => (
+                  <li key={user._id} className="p-2">
+                    {user.username}
+                  </li>
+                ))}
+              </ul>
+              {selectedUsers.length >= 2 && (
+                <>
+                  <p className="text-sm text-gray-500">
+                    Group chat will be created since you have selected more than
+                    1 user.
+                  </p>
+                  <Input
+                    type="text"
+                    placeholder="Group chat name (optional)"
+                    className="my-2"
+                    onChange={(e) => setGroupName(e.target.value)}
+                    value={groupName}
+                  />
+                </>
+              )}
+              <Button
+                onClick={handleCreateChat}
+                disabled={selectedUsers.length === 0}
+              >
+                Create Chat
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </>
