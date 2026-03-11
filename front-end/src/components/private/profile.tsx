@@ -1,93 +1,27 @@
 import { useAuth } from "@/hooks/use-auth";
-import { Edit, LogOut, Upload } from "lucide-react";
-import React from "react";
+import { Edit, LogOut, Trash } from "lucide-react";
 import { Button } from "../ui/button";
-import { Input } from "../ui/input";
+import ChangeAvatar, { saveImage } from "./change-avatar";
 import api from "@/services/api";
-import { Label } from "../ui/label";
-import type { UserType } from "@/types/api-types";
+import React from "react";
 const dummyImg =
   "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png";
 
-type ResponseTypeOne = {
-  signature: string;
-  timestamp: string;
-  cloudName: string;
-  apiKey: string;
-};
-
-type ResponseTypeTwo = {
-  updatedUser: UserType;
-  ok: boolean;
-  message: string;
-};
-
-const getSignature = async (path: string) => {
-  const data = await api
-    .get<ResponseTypeOne>(`/user/cloud-sign?origin=profile_pics&path=${path}`)
-    .then((res) => res.data);
-  return data;
-};
-
-const saveImage = async ({
-  url,
-  asset_id,
-}: {
-  url: string;
-  asset_id: string;
-}) => {
-  const data = await api
-    .put<ResponseTypeTwo>("/user/update", { avatar: url, asset_id })
-    .then((res) => res.data);
-  // console.log(data);
-  if (!data.ok) {
-    console.error(data.message);
-  }
-  return data.updatedUser;
-};
-
 const Profile = () => {
-  const { authInfo, updateAuthUser, logout } = useAuth();
+  const { authInfo, logout, updateAuthUser } = useAuth();
   if (!authInfo) {
     return null;
   }
   const { auth_user } = authInfo;
-  const [loading, setLoading] = React.useState(false);
-  const [image, setImage] = React.useState<File | null>(null);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setImage(e.target.files ? e.target.files[0] : null);
-  };
-
-  const uploadImage = async () => {
-    if (!image) return;
-    setLoading(true);
-    const { signature, timestamp, cloudName, apiKey } = await getSignature(
-      auth_user._id,
-    );
-
-    const data = new FormData();
-    data.append("file", image);
-    data.append("api_key", apiKey); // safe, can be public
-    data.append("timestamp", timestamp);
-    data.append("signature", signature);
-    data.append("folder", `profile_pics/${auth_user._id}`);
-
-    const response = await fetch(
-      `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-      { method: "POST", body: data },
-    );
-    const result = await response.json();
-    console.log("Cloudinary result:", result);
-    const { secure_url, asset_id } = result;
-    const user = await saveImage({
-      url: secure_url.replace("/upload", "/upload/q_auto/ar_1:1,c_fill"),
-      asset_id,
-    });
-    await updateAuthUser(user);
-    setLoading(false);
-    setImage(null);
-  };
+  const [showChangeAvatar, setShowChangeAvatar] = React.useState<{
+    img: boolean;
+    details: boolean;
+    images: { url: string; asset_id: string }[];
+  }>({
+    img: false,
+    details: false,
+    images: [],
+  });
 
   return (
     <div className="p-4">
@@ -107,35 +41,82 @@ const Profile = () => {
         </div>
       </div>
       <div className="h-[20vh] flex flex-col gap-4 items-center justify-center p-4">
-        <div className="flex items-center gap-2">
-          <div className="flex flex-col items-start gap-2">
-            <Label htmlFor="avatar-upload">Change Avatar</Label>
-            <Input
-              type="file"
-              id="avatar-upload"
-              accept="image/*"
-              // className="hidden"
-              onChange={handleFileChange}
-            />
-          </div>
-          {/* <label htmlFor="avatar-upload" className="flex gap-2 cursor-pointer">
-            <span>Change Avatar</span>
-          </label> */}
-          {image && (
-            <div className="flex items-center gap-2">
-              <div className="relative w-16 h-16 flex justify-center items-center">
-                <img
-                  src={URL.createObjectURL(image)}
-                  alt="Preview"
-                  className="w-full h-full rounded-full object-cover"
-                />
+        {showChangeAvatar.img ? (
+          <div>
+            {showChangeAvatar.images.length > 0 ? (
+              <div className="flex flex-wrap gap-4">
+                {showChangeAvatar.images.map((img) => (
+                  <div
+                    key={img.asset_id}
+                    className="relative w-16 h-16 flex justify-center items-center"
+                  >
+                    <img
+                      key={img.asset_id}
+                      src={img.url}
+                      alt="Preview"
+                      className="w-full h-full rounded-full object-cover"
+                      onClick={() => {
+                        saveImage({
+                          url: img.url,
+                          asset_id: img.asset_id,
+                        }).then(async (user) => {
+                          console.log(user);
+                          await updateAuthUser(user);
+                          setShowChangeAvatar((prev) => ({
+                            ...prev,
+                            details: false,
+                          }));
+                        });
+                      }}
+                    />
+                    <Button
+                      variant="destructive"
+                      className="absolute -bottom-2 -right-2"
+                      size="sm"
+                      onClick={() =>
+                        api
+                          .delete("/user/cloud-images?asset_id=" + img.asset_id)
+                          .then(() => {
+                            console.log(
+                              "Deleted image with asset_id:",
+                              img.asset_id,
+                            );
+                          })
+                      }
+                    >
+                      <Trash className="w-5 h-5" />
+                    </Button>
+                  </div>
+                ))}
               </div>
-              <Button onClick={uploadImage} disabled={loading} size="lg">
-                Upload <Upload className="w-5 h-5" />
-              </Button>
-            </div>
-          )}
-        </div>
+            ) : null}
+          </div>
+        ) : (
+          <Button
+            onClick={() => {
+              api
+                .get(
+                  "/user/cloud-images?origin=profile_pics&path=" +
+                    auth_user._id,
+                )
+                .then((res) => {
+                  console.log(res.data);
+                  setShowChangeAvatar((prev) => ({
+                    ...prev,
+                    img: true,
+                    details: true,
+                    images: res.data.images.map((img: any) => ({
+                      url: img.secure_url,
+                      asset_id: img.asset_id,
+                    })),
+                  }));
+                });
+            }}
+          >
+            Change Avatar
+          </Button>
+        )}
+        {showChangeAvatar.details && <ChangeAvatar />}
       </div>
       <div className="flex flex-col items-center justify-center gap-4">
         <div className="flex items-center gap-2">
