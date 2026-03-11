@@ -22,9 +22,9 @@ type ResponseTypeTwo = {
   message: string;
 };
 
-const getSignature = async () => {
+const getSignature = async (path: string) => {
   const data = await api
-    .get<ResponseTypeOne>("/user/cloud-sign")
+    .get<ResponseTypeOne>(`/user/cloud-sign?origin=profile_pics&path=${path}`)
     .then((res) => res.data);
   return data;
 };
@@ -62,14 +62,16 @@ const Profile = () => {
   const uploadImage = async () => {
     if (!image) return;
     setLoading(true);
-    const { signature, timestamp, cloudName, apiKey } = await getSignature();
+    const { signature, timestamp, cloudName, apiKey } = await getSignature(
+      auth_user._id,
+    );
 
     const data = new FormData();
     data.append("file", image);
     data.append("api_key", apiKey); // safe, can be public
     data.append("timestamp", timestamp);
     data.append("signature", signature);
-    data.append("folder", "sign_uploads");
+    data.append("folder", `profile_pics/${auth_user._id}`);
 
     const response = await fetch(
       `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,

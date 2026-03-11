@@ -4,6 +4,10 @@ export type MessageType = {
   sender: string;
   chatId: string;
   createdAt: Date;
+  attachment: {
+    url: string;
+    type: string;
+  };
 };
 
 export type UserType = {
