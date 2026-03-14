@@ -14,11 +14,14 @@ cloudinary.config({
 });
 
 export const handleGetCloudinarySign = (req: Request, res: Response) => {
+  const { origin, path } = req.query as { origin?: string; path?: string };
   const timestamp = Math.round(Date.now() / 1000);
+
+  const folderToUse = origin && path ? `${origin}/${path}` : "sign_uploads";
 
   const paramsToSign = {
     timestamp,
-    folder: "sign_uploads",
+    folder: folderToUse,
   };
 
   const signature = cloudinary.utils.api_sign_request(paramsToSign, API_SECRET);
@@ -30,3 +33,19 @@ export const handleGetCloudinarySign = (req: Request, res: Response) => {
     cloudName: CLOUD_NAME,
   });
 };
+
+export async function getImages(req: Request, res: Response) {
+  const { origin, path } = req.query as { origin?: string; path?: string };
+  const prefix = origin && path ? `${origin}/${path}` : "sign_uploads";
+  const result = await cloudinary.api.resources({
+    type: "upload",
+    prefix,
+    resource_type: "image",
+    max_results: 500,
+  });
+
+  console.log(result.resources);
+  return res.json({
+    images: result.resources,
+  });
+}

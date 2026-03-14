@@ -108,7 +108,21 @@ const AllMessages = ({
                 : "self-start bg-gray-200 text-gray-900 dark:bg-gray-800 dark:text-white"
             }`}
             >
+              {message.attachment && (
+                <span
+                  className="block text-xs text-blue-500 cursor-pointer"
+                  onClick={() =>
+                    message.attachment &&
+                    window.open(message.attachment.url, "_blank")
+                  }
+                >
+                  {message.attachment.url}
+                </span>
+              )}
               {message.msg}
+              <span className="block text-xs text-gray-500 mt-1">
+                {new Date(message.createdAt).toLocaleTimeString()}
+              </span>
               {selected.includes(message._id) && (
                 <span className="absolute -top-1 -right-1">✔️</span>
               )}
