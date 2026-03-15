@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Copy, ListChecks, ListTodo, Trash, X } from "lucide-react";
 import { toast } from "sonner";
 import api from "@/services/api";
+import AttachmentPreview from "./attachement-preview";
 
 const AllMessages = ({
   chatId,
@@ -90,7 +91,7 @@ const AllMessages = ({
         ) : (
           <div className="p-1" />
         )}
-        <div className="flex flex-col gap-2 px-2">
+        <div className="flex flex-col gap-2 px-2 min-w-0">
           {messages.map((message) => (
             <motion.div
               key={message._id}
@@ -101,7 +102,7 @@ const AllMessages = ({
                     : [...prev, message._id],
                 )
               }
-              className={`max-w-[80%] relative px-4 py-2 rounded-xl text-sm shadow select-none
+              className={`max-w-[80%] relative min-w-0 px-4 py-2 rounded-xl text-sm shadow select-none
             ${
               message.sender === authInfo.auth_user._id
                 ? "self-end bg-green-500 text-white"
@@ -109,15 +110,16 @@ const AllMessages = ({
             }`}
             >
               {message.attachment && (
-                <span
-                  className="block text-xs text-blue-500 cursor-pointer"
-                  onClick={() =>
-                    message.attachment &&
-                    window.open(message.attachment.url, "_blank")
-                  }
-                >
-                  {message.attachment.url}
-                </span>
+                // <span
+                //   className="block text-xs text-blue-500 cursor-pointer break-all w-full"
+                //   onClick={() =>
+                //     message.attachment &&
+                //     window.open(message.attachment.url, "_blank")
+                //   }
+                // >
+                //   {message.attachment.url}
+                // </span>
+                <AttachmentPreview url={message.attachment.url} />
               )}
               {message.msg}
               <span className="block text-xs text-gray-500 mt-1">
