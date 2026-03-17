@@ -152,7 +152,7 @@ const SendMessageWithAttachment = ({
       data.append("signature", signature);
       data.append("folder", `chats/${chatId}`);
       const response = await fetch(
-        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+        `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
         { method: "POST", body: data },
       );
       const result = await response.json();
