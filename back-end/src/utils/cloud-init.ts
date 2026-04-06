@@ -47,5 +47,11 @@ export async function getImages(req: Request, res: Response) {
   console.log(result.resources);
   return res.json({
     images: result.resources,
+    ok: true,
   });
+}
+export async function deleteImage(req: Request, res: Response) {
+  const { assetId } = req.query as { assetId: string };
+  await cloudinary.api.delete_resources([assetId]);
+  return res.json({ ok: true, message: "Image deleted successfully" });
 }

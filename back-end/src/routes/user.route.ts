@@ -8,7 +8,11 @@ import {
   handleUpdateUserDetails,
 } from "@/controllers/user.controller";
 import asyncWrap from "@/utils/async-wrap";
-import { getImages, handleGetCloudinarySign } from "@/utils/cloud-init";
+import {
+  getImages,
+  handleGetCloudinarySign,
+  deleteImage,
+} from "@/utils/cloud-init";
 import { onlyLoggedInUser } from "@/middlewares/auth";
 
 const userRouter = Router();
@@ -29,6 +33,9 @@ userRouter
   .get(onlyLoggedInUser, asyncWrap(handleGetSearchedUser)); // Endpoint to search users (?q=someusername)
 
 userRouter.route("/cloud-sign").get(onlyLoggedInUser, handleGetCloudinarySign);
-userRouter.route("/cloud-images").get(onlyLoggedInUser, asyncWrap(getImages));
+userRouter
+  .route("/cloud-images")
+  .get(onlyLoggedInUser, asyncWrap(getImages))
+  .delete(onlyLoggedInUser, asyncWrap(deleteImage));
 
 export default userRouter;
