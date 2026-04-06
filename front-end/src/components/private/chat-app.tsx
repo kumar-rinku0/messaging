@@ -135,6 +135,9 @@ const ChatApp = () => {
                     onClick={() => handleUserSelect(user)}
                   >
                     {user.username}
+                    {selectedUsers.some((u) => u._id === user._id) && (
+                      <span className="ml-2 text-green-500">✓</span>
+                    )}
                   </li>
                 ))}
               </ul>
