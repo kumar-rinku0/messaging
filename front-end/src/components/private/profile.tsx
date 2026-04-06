@@ -75,12 +75,18 @@ const Profile = () => {
                       size="sm"
                       onClick={() =>
                         api
-                          .delete("/user/cloud-images?asset_id=" + img.asset_id)
+                          .delete("/user/cloud-images?assetId=" + img.asset_id)
                           .then(() => {
                             console.log(
                               "Deleted image with asset_id:",
                               img.asset_id,
                             );
+                            setShowChangeAvatar((prev) => ({
+                              ...prev,
+                              images: prev.images.filter(
+                                (i) => i.asset_id !== img.asset_id,
+                              ),
+                            }));
                           })
                       }
                     >
