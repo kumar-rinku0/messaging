@@ -50,16 +50,28 @@ export default function SideNav() {
             <span className="font-semibold"> */}
           {!isMobile && (
             <div className="flex gap-1 px-1 mt-2 mb-1">
-              {chatTypes.map((chatType) => (
-                <Button
-                  key={chatType}
-                  variant="outline"
-                  className={currType === chatType ? "bg-gray-300" : ""}
-                  onClick={() => setCurrentType(chatType)}
-                >
-                  {chatType}
-                </Button>
-              ))}
+              {chatTypes.map((chatType) => {
+                const notificationCount = chats
+                  .filter(
+                    (chat) => chatType === "all" || chat.type === chatType,
+                  )
+                  .reduce((sum, chat) => sum + chat.notificationCount, 0);
+                return (
+                  <Button
+                    key={chatType}
+                    variant="outline"
+                    className={currType === chatType ? "bg-gray-300" : ""}
+                    onClick={() => setCurrentType(chatType)}
+                  >
+                    {chatType}
+                    <span
+                      className={`ml-1 bg-gray-200 px-1 rounded-full text-xs ${notificationCount > 0 ? "text-red-500" : "text-gray-500"}`}
+                    >
+                      {notificationCount}
+                    </span>
+                  </Button>
+                );
+              })}
             </div>
           )}
           {/* </span>

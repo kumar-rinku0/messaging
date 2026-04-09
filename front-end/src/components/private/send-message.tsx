@@ -174,6 +174,7 @@ const SendMessageWithAttachment = ({
         console.log(mData.message);
         return;
       }
+      socket.emit("msg", chatId, mData.message);
       setMessages((prev) => [...prev, mData.message]);
     }
     setLoading(false);
