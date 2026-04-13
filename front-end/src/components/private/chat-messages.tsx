@@ -28,7 +28,6 @@ const ChatMessages = () => {
 };
 
 const ChatMsgFunc = ({ chatId, chat }: { chatId: string; chat: ChatType }) => {
-  const typingUsers = chat.members;
   const { resetChatNotifications } = useData();
   const [messages, setMessages] = React.useState<MessageType[]>([]);
   const [count, setCount] = React.useState<{
