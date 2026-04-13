@@ -1,20 +1,14 @@
 import api from "@/services/api";
 import type { ChatType, MessageType, UserType } from "@/types/api-types";
 import React, { useEffect } from "react";
-import { MoreVertical } from "lucide-react";
 import socket from "@/services/socket";
-import { useNavigate, useParams } from "react-router";
-import { Button } from "../ui/button";
+import { useParams } from "react-router";
+
 import { useData } from "@/hooks/use-data";
-import {
-  Popover,
-  PopoverContent,
-  PopoverHeader,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { toast } from "sonner";
+
 import AllMessages from "./all-messages";
 import SendMessage from "./send-message";
+import ChatHeader from "./chat-header";
 
 type ResponseType = {
   messages: MessageType[];
@@ -93,30 +87,7 @@ const ChatMsgFunc = ({ chatId, chat }: { chatId: string; chat: ChatType }) => {
   return (
     <div className="h-[100vh]">
       {/* chat header */}
-      <div className="h-14 px-2 flex justify-between items-center border-b border-b-gray-200">
-        <div className="flex justify-center items-center gap-4 px-4">
-          <div className="relative w-12 h-12">
-            <img
-              src={
-                chat?.displayAvatar ||
-                "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png"
-              }
-              alt=""
-              className="object-cover w-12 h-12 rounded-full"
-            />
-          </div>
-          <span className="font-semibold">{chat?.displayName}</span>
-          {typingUsers && typingUsers.some((user) => user?.typing) && (
-            <span className="font-light text-sm truncate">
-              {typingUsers
-                .filter((user) => user?.typing)
-                .map((user) => `${user.username} `)}
-              typing
-            </span>
-          )}
-        </div>
-        <MoreOptions chatId={chatId!} updateMessages={updateMessages} />
-      </div>
+      <ChatHeader chatId={chatId} chat={chat} />
       {/* messages */}
       <div className="flex relative h-[calc(100vh-3.5rem)] flex-col">
         <AllMessages
@@ -136,75 +107,6 @@ const ChatMsgFunc = ({ chatId, chat }: { chatId: string; chat: ChatType }) => {
         />
       </div>
     </div>
-  );
-};
-
-type ResponseTypeDeleteChat = {
-  message: string;
-  ok: boolean;
-};
-
-type ResponseTypeDeleteMsg = {
-  message: string;
-  ok: boolean;
-};
-
-const MoreOptions = ({
-  chatId,
-  updateMessages,
-}: {
-  chatId: string;
-  updateMessages: (ids: string[]) => void;
-}) => {
-  const router = useNavigate();
-  const { removeOneChat } = useData();
-  const handleDeleteChat = () => {
-    api.delete<ResponseTypeDeleteChat>(`/chat/chatId/${chatId}`).then((res) => {
-      if (!res.data.ok) {
-        toast.error(res.data.message);
-        return;
-      }
-      removeOneChat(chatId);
-      router("/");
-      toast.success(res.data.message);
-    });
-  };
-  const handleClearMessages = () => {
-    api
-      .delete<ResponseTypeDeleteMsg>(`/msg/all/chatId/${chatId}`)
-      .then((res) => {
-        if (!res.data.ok) {
-          toast.error(res.data.message);
-          return;
-        }
-        updateMessages([]);
-        toast.success(res.data.message);
-      });
-  };
-  return (
-    <Popover>
-      <PopoverTrigger>
-        <MoreVertical />
-      </PopoverTrigger>
-      <PopoverContent align="end" className="w-40">
-        <PopoverHeader>
-          <Button
-            variant="link"
-            className="justify-start cursor-pointer"
-            onClick={handleClearMessages}
-          >
-            Clear Messages
-          </Button>
-          <Button
-            variant="link"
-            onClick={handleDeleteChat}
-            className="justify-start cursor-pointer"
-          >
-            Delete Chat
-          </Button>
-        </PopoverHeader>
-      </PopoverContent>
-    </Popover>
   );
 };
 

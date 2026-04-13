@@ -5,6 +5,7 @@ import ChatApp from "@/components/private/chat-app";
 import Header from "./components/header";
 import ChatMessages from "./components/private/chat-messages";
 import Profile from "./components/private/profile";
+import ChatMembers from "./components/private/chat-members";
 import { useAuth } from "./hooks/use-auth";
 import { DataProvider } from "./hooks/use-data";
 export default function App() {
@@ -27,6 +28,7 @@ export default function App() {
           <Route path="/" element={<ChatApp />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/:chatId" element={<ChatMessages />} />
+          <Route path="/:chatId/members" element={<ChatMembers />} />
         </Route>
       </Routes>
     </DataProvider>
