@@ -83,10 +83,18 @@ const ChatMsgFunc = ({ chatId, chat }: { chatId: string; chat: ChatType }) => {
     setMessages((prev) => prev.filter((m) => !ids.includes(m._id)));
   };
 
+  const updateMessagesToNull = () => {
+    setMessages([]);
+  };
+
   return (
     <div className="h-[100vh]">
       {/* chat header */}
-      <ChatHeader chatId={chatId} chat={chat} updateMessages={updateMessages} />
+      <ChatHeader
+        chatId={chatId}
+        chat={chat}
+        updateMessagesToNull={updateMessagesToNull}
+      />
       {/* messages */}
       <div className="flex relative h-[calc(100vh-3.5rem)] flex-col">
         <AllMessages

@@ -15,11 +15,11 @@ import type { ChatType } from "@/types/api-types";
 const ChatHeader = ({
   chatId,
   chat,
-  updateMessages,
+  updateMessagesToNull,
 }: {
   chatId: string;
   chat: ChatType;
-  updateMessages: (ids: []) => void;
+  updateMessagesToNull: () => void;
 }) => {
   const typingUsers = chat.members;
   return (
@@ -45,7 +45,10 @@ const ChatHeader = ({
           </span>
         )}
       </div>
-      <MoreOptions chatId={chatId!} updateMessages={updateMessages} />
+      <MoreOptions
+        chatId={chatId!}
+        updateMessagesToNull={updateMessagesToNull}
+      />
     </div>
   );
 };
@@ -62,10 +65,10 @@ type ResponseTypeDeleteMsg = {
 
 const MoreOptions = ({
   chatId,
-  updateMessages,
+  updateMessagesToNull,
 }: {
   chatId: string;
-  updateMessages: (ids: []) => void;
+  updateMessagesToNull: () => void;
 }) => {
   const router = useNavigate();
   const { removeOneChat } = useData();
@@ -88,7 +91,7 @@ const MoreOptions = ({
           toast.error(res.data.message);
           return;
         }
-        updateMessages([]);
+        updateMessagesToNull();
         toast.success(res.data.message);
       });
   };
