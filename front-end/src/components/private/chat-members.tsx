@@ -1,6 +1,6 @@
 import { useData } from "@/hooks/use-data";
 import { useParams } from "react-router";
-import ChatHeader from "./chat-header";
+// import ChatHeader from "./chat-header";
 
 const ChatMembers = () => {
   const { chatId } = useParams<{ chatId: string }>();
