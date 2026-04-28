@@ -86,7 +86,7 @@ const ChatMsgFunc = ({ chatId, chat }: { chatId: string; chat: ChatType }) => {
   return (
     <div className="h-[100vh]">
       {/* chat header */}
-      <ChatHeader chatId={chatId} chat={chat} />
+      <ChatHeader chatId={chatId} chat={chat} updateMessages={updateMessages} />
       {/* messages */}
       <div className="flex relative h-[calc(100vh-3.5rem)] flex-col">
         <AllMessages
