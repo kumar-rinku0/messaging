@@ -17,7 +17,7 @@ const ChatMembers = () => {
   }
   return (
     <div className="min-h-screen">
-      <ChatHeader chatId={chatId} chat={chat} />
+      {/* <ChatHeader chatId={chatId} chat={chat} /> */}
       <div className="flex justify-center items-center h-[80vh]">
         <div className="p-4 max-w-sm bg-white rounded-2xl shadow-md border border-gray-200">
           {/* Chat Name */}
