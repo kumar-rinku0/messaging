@@ -12,7 +12,15 @@ import { toast } from "sonner";
 import api from "@/services/api";
 import type { ChatType } from "@/types/api-types";
 
-const ChatHeader = ({ chatId, chat }: { chatId: string; chat: ChatType }) => {
+const ChatHeader = ({
+  chatId,
+  chat,
+  updateMessages,
+}: {
+  chatId: string;
+  chat: ChatType;
+  updateMessages: (ids: []) => void;
+}) => {
   const typingUsers = chat.members;
   return (
     <div className="h-14 px-2 flex justify-between items-center border-b border-b-gray-200">
@@ -37,7 +45,7 @@ const ChatHeader = ({ chatId, chat }: { chatId: string; chat: ChatType }) => {
           </span>
         )}
       </div>
-      <MoreOptions chatId={chatId!} />
+      <MoreOptions chatId={chatId!} updateMessages={updateMessages} />
     </div>
   );
 };
@@ -52,7 +60,13 @@ type ResponseTypeDeleteMsg = {
   ok: boolean;
 };
 
-const MoreOptions = ({ chatId }: { chatId: string }) => {
+const MoreOptions = ({
+  chatId,
+  updateMessages,
+}: {
+  chatId: string;
+  updateMessages: (ids: []) => void;
+}) => {
   const router = useNavigate();
   const { removeOneChat } = useData();
   const handleDeleteChat = () => {
@@ -74,7 +88,7 @@ const MoreOptions = ({ chatId }: { chatId: string }) => {
           toast.error(res.data.message);
           return;
         }
-        location.reload();
+        updateMessages([]);
         toast.success(res.data.message);
       });
   };
