@@ -1,8 +1,10 @@
 import { useData } from "@/hooks/use-data";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
+import { Button } from "../ui/button";
 // import ChatHeader from "./chat-header";
 
 const ChatMembers = () => {
+  const router = useNavigate();
   const { chatId } = useParams<{ chatId: string }>();
   const { chats } = useData();
   if (!chatId || !chats) {
@@ -18,6 +20,9 @@ const ChatMembers = () => {
   return (
     <div className="min-h-screen">
       {/* <ChatHeader chatId={chatId} chat={chat} /> */}
+      <div className="h-14 px-2 flex justify-between items-center border-b border-b-gray-200">
+        <Button onClick={() => router(-1)}>Back</Button>
+      </div>
       <div className="flex justify-center items-center h-[80vh]">
         <div className="p-4 max-w-sm bg-white rounded-2xl shadow-md border border-gray-200">
           {/* Chat Name */}
