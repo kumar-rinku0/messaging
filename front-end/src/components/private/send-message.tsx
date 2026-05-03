@@ -69,7 +69,9 @@ const SendMessage = ({
         socket.emit("msg", chat._id, message);
       });
   };
-  const typingTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  const typingTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
 
   const handleTyping = (e: React.ChangeEvent<HTMLInputElement>) => {
     setMsg(e.target.value);

@@ -43,7 +43,7 @@ type ChatsDataType = {
 const DataContext = createContext<AppDataContextType | undefined>(undefined);
 
 export const DataProvider = ({ children }: { children: React.ReactNode }) => {
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { isLoading, authInfo } = useAuth();
   if (isLoading || !authInfo) {
     return null;
