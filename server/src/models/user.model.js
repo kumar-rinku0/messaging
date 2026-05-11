@@ -1,0 +1,53 @@
+import { Schema, model } from "mongoose";
+import { saltAndHashPassword } from "../utils/hashing.js";
+
+const userSchema = new Schema({
+  username: {
+    type: String,
+    required: [true, "username is required."],
+    unique: [true, "username must be unique."],
+  },
+  avatar: {
+    type: String,
+    default:
+      "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png",
+  },
+  email: {
+    type: String,
+    required: [true, "email is required."],
+    unique: [true, "email must be unique."],
+  },
+  password: { type: String, required: [true, "password is required."] },
+});
+
+const sessionSchema = new Schema({
+  userId: {
+    type: Schema.ObjectId,
+    required: [true, "user id is required."],
+  },
+  deviceName: {
+    type: String,
+    required: [true, "device name is required."],
+  },
+  ip: {
+    type: String,
+    required: [true, "ip is required."],
+  },
+  userAgent: {
+    type: String,
+    required: [true, "user agent is required."],
+  },
+  token: String,
+  lastUsed: Date,
+});
+
+export const Session = model("Session", sessionSchema);
+
+userSchema.pre("save", async function () {
+  if (!this.isModified("password")) return;
+  this.password = saltAndHashPassword(this.password);
+});
+
+const User = model("User", userSchema);
+
+export default User;
