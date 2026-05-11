@@ -1,0 +1,127 @@
+import Message from "../models/msg.model.js";
+import Chat from "../models/chat.model.js";
+import { getFormatedChat } from "../utils/type-fix.js";
+
+const handleCreateMessage = async (req, res) => {
+  const { chatId, sender, msg, attachment } = req.body;
+  const user = req.user;
+  if (sender !== user._id) {
+    return res.status(403).json({ message: "Unauthorized", ok: false });
+  }
+  const chat = await Chat.findById(chatId);
+  if (!chat) {
+    return res.status(400).json({ message: "chat not found", ok: false });
+  }
+  const message = new Message({
+    chatId,
+    sender,
+    msg,
+    seenBy: [sender],
+  });
+  if (attachment) {
+    message.attachment = {
+      url: attachment.url,
+      type: attachment.type,
+    };
+  }
+  await message.save();
+  chat.lastMessage = message._id;
+  await chat.save();
+
+  return res.status(201).json({ message, ok: true });
+};
+
+const handleGetMessagesByChatId = async (req, res) => {
+  const { chatId } = req.params;
+  const chat = await Chat.findById(chatId).populate(
+    "members",
+    "username avatar _id",
+  );
+  if (!chat) {
+    return res.status(404).json({ message: "Chat not found", ok: false });
+  }
+  const { page = 1, limit = 20, user: userId } = req.query;
+
+  // Pagination logic (optional)
+  const skip = (Number(page) - 1) * Number(limit);
+  const query = { chatId: chatId };
+
+  const totalMessages = await Message.countDocuments(query);
+
+  const messages = await Message.find(query)
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(Number(limit));
+  const formatedChat = getFormatedChat(chat, userId);
+  return res.status(200).json({
+    messages: messages.reverse(),
+    totalMessages: totalMessages,
+    page: Number(page),
+    totalPages: Math.ceil(totalMessages / Number(limit)),
+    sort: -1,
+    limit,
+    chat: userId ? formatedChat : chat,
+    ok: true,
+  });
+};
+
+const handleGetAllMessagesByChatId = async (req, res) => {
+  const { chatId } = req.params;
+  const chat = await Chat.findById(chatId).populate("members", "username _id");
+  if (!chat) {
+    return res.status(404).json({ message: "Chat not found", ok: false });
+  }
+  const query = { chatId: chatId };
+  const sorted = -1;
+  const totalMessages = await Message.countDocuments(query);
+  const messages = await Message.find(query).sort({ createdAt: sorted });
+
+  return res.status(200).json({
+    messages: messages,
+    totalMessages: totalMessages,
+    sort: sorted,
+    chat,
+    ok: true,
+  });
+};
+
+const handleGetLastMessageByChatId = async (req, res) => {
+  const { chatId } = req.params;
+
+  const lastMessage = await Message.findOne({ chatId: chatId }).sort({
+    createdAt: -1,
+  });
+  return res.status(200).json({ lastMessage, ok: true });
+};
+
+const handleDeleteAllMessagesByChatId = async (req, res) => {
+  const { chatId } = req.params;
+  const doc = await Message.deleteMany({ chatId: chatId });
+  if (!doc) {
+    return res
+      .status(400)
+      .json({ ok: false, message: "failed to prune messages." });
+  }
+  return res.status(200).json({ ok: true, message: "messages pruned." });
+};
+
+const handleDeleteSelectedMessagesByChatId = async (req, res) => {
+  const { chatId } = req.params;
+  const { ids } = req.body;
+  const doc = await Message.deleteMany({ chatId: chatId, _id: { $in: ids } });
+  if (!doc) {
+    return res
+      .status(400)
+      .json({ ok: false, message: "failed to prune messages." });
+  }
+  return res.status(200).json({ ok: true, message: "messages pruned." });
+};
+
+export {
+  handleCreateMessage,
+  handleGetMessagesByChatId,
+  handleGetLastMessageByChatId,
+  handleGetAllMessagesByChatId,
+  handleDeleteAllMessagesByChatId,
+  handleDeleteSelectedMessagesByChatId,
+};
